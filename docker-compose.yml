@@ -1,0 +1,12 @@
+gizix:
+  build: ./
+  volumes:
+    - ./:/go/src/development/showwin/Gizix
+  ports:
+    - "5000:5000"
+  environment:
+    - DATABASE_USERNAME=docker
+    - DATABASE_PASSWORD=docker
+    - DATABASE_HOST=db
+    - DATABASE_NAME=S0017_development
+    - DATABASE_NAME_TEST=S0017_test
