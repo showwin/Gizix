@@ -22,10 +22,6 @@ func main() {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{})
 	})
 
-	r.GET("/manual", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "manual.tmpl", gin.H{})
-	})
-
 	r.GET("/test", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.tmpl", gin.H{})
 	})
@@ -101,13 +97,14 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 			offer.Sdp = signal.Sdp
 			offerFlg = true
 		}
-		fmt.Println(signal)
 
 		// broadcast する
 		for _, c := range pool {
+			// Don't send it yourself
 			if c == conn {
 				continue
 			}
+
 			if offerFlg {
 				c.WriteJSON(&offer)
 			} else {

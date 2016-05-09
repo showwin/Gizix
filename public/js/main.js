@@ -8,7 +8,6 @@ window.onload = function(){
 
   var video = document.getElementById('my-video');
   navigator.getUserMedia({video: true, audio: true}, function(stream) { // for success case
-    console.log(stream);
     localStream = stream;
     video.src = window.URL.createObjectURL(stream);
    },
@@ -29,12 +28,10 @@ function socketOpen() {
   if (socket == null) {
     // WebSocket の初期化
     socket = new WebSocket(uri);
-    // イベントハンドラの設定
     socket.onopen = onOpen;
     socket.onmessage = onMessage;
     socket.onclose = onClose;
     socket.onerror = onError;
-    console.log('socket opened.');
     socketReady = true;
   }
 }
@@ -45,7 +42,7 @@ var peerReady = false;
 
 // 接続イベント
 function onOpen(event) {
-  console.log("接続しました。");
+  console.log('socket opened.');
 }
 
 // メッセージ受信イベント
@@ -79,19 +76,10 @@ function initialize() {
   peer = new SimplePeer({ initiator: initiator, stream: localStream })
   peer.on('signal', function (data) {
     var text = JSON.stringify(data);
-    console.log("peerSignal: " + text)
+    //console.log("peerSignal: " + text)
     socket.send(text);
   })
   peerReady = true;
-}
-
-function connect() {
-  if (socketReady) {
-    sendOffer();
-    peerStarted = true;
-  } else {
-    alert("WebSocket is not ready - try again.");
-  }
 }
 
 function receive(signal) {
@@ -102,7 +90,7 @@ function receive(signal) {
 function answer() {
   peer.on('signal', function (data) {
     var text = JSON.stringify(data);
-    console.log("peerSignal: " + text);
+    //console.log("peerSignal: " + text);
     socket.send(text);
   })
   peerReady = true;
