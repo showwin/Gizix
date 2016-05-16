@@ -20,9 +20,10 @@ window.onload = function(){
 // ---- socket ------
 // create socket
 var socketReady = false;
-var port = 5000;
-var uri = 'ws://192.168.99.100:' + port + '/ws';
+var port = 443;
+var uri = 'wss://192.168.99.100:' + port + '/ws';
 var socket = null;
+var socketId = null;
 
 function socketOpen() {
   if (socket == null) {
@@ -49,12 +50,23 @@ function onOpen(event) {
 function onMessage(event) {
   var signal = JSON.parse(event.data);
   console.log("Received.");
-  receive(signal)
-  if (peerReady == false) {
-    answer();
-    console.log("Answered.");
+  // 通信時の自分のIDを保存する
+  if (signal.type == 'config') {
+    socketId = signal.id;
+    console.log("MyId:" + socketId);
+  } else {
+    // だれから送られてきたのか取得
+    var sigFrom = signal.from;
+    delete signal['from'];
+    console.log("From: " + sigFrom);
+    console.log(signal)
+    receive(signal)
+    if (peerReady == false) {
+      answer(sigFrom);
+      console.log("Answered.");
+    }
+    startCall();
   }
-  startCall();
 }
 
 // エラーイベント
@@ -75,6 +87,7 @@ function initialize() {
   initiator = true;
   peer = new SimplePeer({ initiator: initiator, stream: localStream })
   peer.on('signal', function (data) {
+    data.to = "broadcast";
     var text = JSON.stringify(data);
     //console.log("peerSignal: " + text)
     socket.send(text);
@@ -87,10 +100,10 @@ function receive(signal) {
   peer.signal(signal)
 }
 
-function answer() {
+function answer(to) {
   peer.on('signal', function (data) {
+    data.to = to;
     var text = JSON.stringify(data);
-    //console.log("peerSignal: " + text);
     socket.send(text);
   })
   peerReady = true;
