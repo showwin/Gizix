@@ -83,6 +83,12 @@ type PeerCandidateChild struct {
 	SdpMid        string `json:"sdpMid"`
 }
 
+// PeerPool struct
+type PeerPool struct {
+	Type string   `json:"type"`
+	Ids  []string `json:"ids"`
+}
+
 // PeerConfig struct
 type PeerConfig struct {
 	Type string `json:"type"`
@@ -105,32 +111,35 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		var signal PeerSignal
 		var offer PeerOffer
 		var candidate PeerCandidate
+		var peerPool PeerPool
 		offerFlg := false
 		conn.ReadJSON(&signal)
 		if signal.Type == "" {
 			candidate.Candidate = signal.Candidate
 			candidate.From = cID
+		} else if signal.Type == "initialize" {
+			peerPool.Type = "initialize"
+			for i := range pool {
+				id := strconv.Itoa(i)
+				if id == cID {
+					fmt.Printf("initialize %s", id)
+					continue
+				}
+				peerPool.Ids = append(peerPool.Ids, id)
+			}
 		} else {
 			offer.Type = signal.Type
 			offer.Sdp = signal.Sdp
 			offer.From = cID
 			offerFlg = true
 		}
+		fmt.Println("Connection Pool:")
+		fmt.Println(pool)
 
-		if signal.To == "broadcast" {
-			for _, c := range pool {
-				// Don't send it yourself
-				if c == conn {
-					continue
-				}
-
-				if offerFlg {
-					c.WriteJSON(&offer)
-				} else {
-					c.WriteJSON(&candidate)
-				}
-			}
-			fmt.Println("Send to Broadcast")
+		if signal.To == "myself" {
+			conn.WriteJSON(peerPool)
+			fmt.Println("Send Pool Info")
+			fmt.Println(peerPool)
 		} else {
 			to, _ := strconv.Atoi(signal.To)
 			c := pool[to]
