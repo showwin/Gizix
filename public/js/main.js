@@ -24,8 +24,6 @@ var port = 443;
 var uri = 'wss://192.168.99.100:' + port + '/ws';
 var socket = null;
 var socketId = null;
-var connectedIds = [];
-var connectedPeers = [];
 
 function socketOpen() {
   if (socket == null) {
@@ -39,6 +37,10 @@ function socketOpen() {
   }
 }
 socketOpen();
+
+// P2P
+var connectedIds = [];
+var connectedPeers = [];
 var initiator = false;
 var peerReady = false;
 
@@ -59,32 +61,19 @@ function onMessage(event) {
     var pool = signal.ids;
     for (var i=0; i < pool.length; i++) {
       var sigTo = pool[i];
+      // まだ繋がっていなければ接続
       if (connectedIds.indexOf(sigTo) == -1) {
-        console.log("Initialize to: " + sigTo);
-        connectedIds.push(sigTo);
-        var newPeer = new SimplePeer({ initiator: true, stream: localStream });
-        connectedPeers.push(newPeer);
-
-        answer(newPeer, sigTo)
-        startCall(newPeer, sigTo);
+        createConnection(sigTo, true)
       }
     }
   } else {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
     delete signal['from'];
-    console.log("From: " + sigFrom);
-    console.log(signal)
-    // まだ繋がっていなければ answer
+    console.log("Call From: " + sigFrom);
+    // まだ繋がっていなければ接続
     if (connectedIds.indexOf(sigFrom) == -1) {
-      console.log("I will Answer.");
-      connectedIds.push(sigFrom);
-      var newPeer = new SimplePeer({ stream: localStream });
-      connectedPeers.push(newPeer);
-      answer(newPeer, sigFrom);
-      console.log("Connected with: " + connectedIds)
-      console.log("Answered.");
-      startCall(newPeer, sigFrom);
+      createConnection(sigFrom, false)
     }
     receive(signal, connectedPeers[connectedIds.indexOf(sigFrom)])
   }
@@ -101,7 +90,7 @@ function onClose(event) {
   socket = null;
   socketReady = false;
   // 3秒後に再接続
-  //setTimeout("open()", 3000);
+  setTimeout("open()", 3000);
 }
 
 function initialize() {
@@ -109,8 +98,25 @@ function initialize() {
   var data = { "to": "myself", "type": "initialize"};
   var text = JSON.stringify(data);
   socket.send(text);
+  peerReady = true;
+}
 
+function createConnection(sigId, initFlg) {
+  console.log("Connect to: " + sigId);
+  connectedIds.push(sigId);
+  var newPeer = new SimplePeer({ initiator: initFlg, stream: localStream });
+  connectedPeers.push(newPeer);
+  sendSignal(newPeer, sigId)
+  startCall(newPeer, sigId);
+}
 
+function sendSignal(peer, id) {
+  peer.on('signal', function (data) {
+    data.to = id;
+    var text = JSON.stringify(data);
+    socket.send(text);
+    console.log("Signal send to: " + id + text);
+  })
   peerReady = true;
 }
 
@@ -118,32 +124,9 @@ function receive(signal, peer) {
   peer.signal(signal)
 }
 
-function answer(peer, to) {
-  peer.on('signal', function (data) {
-    data.to = to;
-    var text = JSON.stringify(data);
-    socket.send(text);
-    console.log("Signal send to: " + to + text);
-  })
-  peerReady = true;
-}
-
 function startCall(peer, id) {
   $("#their-video").append("<video id='video-"+id+"' autoplay style='width: 240px; height: 180px; border: 1px solid black;'></video>")
   peer.on('stream', function (remoteStream) {
     $("#video-"+id).prop('src', window.URL.createObjectURL(remoteStream));
   })
-  //displayTheirVideo(call);
-}
-
-
-function displayTheirVideo(call) {
-  if (window.existingCall) {
-      window.existingCall.close();
-  }
-
-  // 相手方とビデオ通信がされた時
-  call.on('stream', function(stream){
-      $('#their-video').prop('src', URL.createObjectURL(stream));
-  });
 }

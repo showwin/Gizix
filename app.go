@@ -63,14 +63,14 @@ type PeerSignal struct {
 	Candidate PeerCandidateChild `json:"candidate"`
 }
 
-// PeerOffer struct
+// PeerOffer struct: use when offering to start P2P
 type PeerOffer struct {
 	Type string `json:"type"`
 	Sdp  string `json:"sdp"`
 	From string `json:"from"`
 }
 
-// PeerCandidate struct
+// PeerCandidate struct: use after offering
 type PeerCandidate struct {
 	Candidate PeerCandidateChild `json:"candidate"`
 	From      string             `json:"from"`
@@ -83,13 +83,13 @@ type PeerCandidateChild struct {
 	SdpMid        string `json:"sdpMid"`
 }
 
-// PeerPool struct
+// PeerPool struct: connected client ids
 type PeerPool struct {
 	Type string   `json:"type"`
 	Ids  []string `json:"ids"`
 }
 
-// PeerConfig struct
+// PeerConfig struct: client config
 type PeerConfig struct {
 	Type string `json:"type"`
 	ID   string `json:"id"`
@@ -104,6 +104,7 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	// response your client id
 	config := PeerConfig{Type: "config", ID: cID}
 	conn.WriteJSON(&config)
 
@@ -113,21 +114,25 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		var candidate PeerCandidate
 		var peerPool PeerPool
 		offerFlg := false
+
 		conn.ReadJSON(&signal)
 		if signal.Type == "" {
+			// Type: candidate
 			candidate.Candidate = signal.Candidate
 			candidate.From = cID
 		} else if signal.Type == "initialize" {
+			// Type: initialize
 			peerPool.Type = "initialize"
 			for i := range pool {
 				id := strconv.Itoa(i)
+				// exclude yourself
 				if id == cID {
-					fmt.Printf("initialize %s", id)
 					continue
 				}
 				peerPool.Ids = append(peerPool.Ids, id)
 			}
 		} else {
+			// Type: offer
 			offer.Type = signal.Type
 			offer.Sdp = signal.Sdp
 			offer.From = cID
