@@ -9,6 +9,9 @@ go get -t -d -v ./... && echo 'Packages are up-to-date !'
 # start Nginx
 sudo service nginx start
 
+# start MySQL
+sudo service mysql start
+
 # build and start
 go build -o bin/application || exit
 bin/application

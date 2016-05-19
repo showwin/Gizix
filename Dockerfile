@@ -19,6 +19,11 @@ ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 WORKDIR $GOPATH/src/development/showwin/Gizix
 
+# install MySQL
+CMD "debconf-set-selections <<< 'mysql-server mysql-server/root_password password mypassword'"
+CMD "debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password mypassword'"
+RUN apt-get -y install mysql-server
+
 # Nginx setting for SSL
 RUN NGPASS=$(pwgen 16 1) && \
     mkdir -p /usr/local/nginx && \
@@ -34,7 +39,7 @@ RUN NGPASS=$(pwgen 16 1) && \
 ADD . /go/src/development/showwin/Gizix
 
 # update Nginx SSL setting
-RUN cp /go/src/development/showwin/Gizix/nginx/gizix /etc/nginx/sites-enabled/gizix
+RUN cp /go/src/development/showwin/Gizix/docker/nginx_conf /etc/nginx/sites-enabled/gizix
 
 EXPOSE 443
 
