@@ -5832,23 +5832,25 @@ fieldset[disabled] .navbar-inverse .navbar-btn.active {
   margin-top: -3px;
 }
 .login {
-  background: url(../img/login/imac.png) 0 0 no-repeat;
   background-size: 940px 778px;
   color: #ffffff;
   margin-bottom: 77px;
+  margin-top: 100px;
   padding: 38px 38px 267px;
   position: relative;
 }
+.login-message {
+  color: #1abc9c;
+}
 .login-screen {
-  background-color: #1abc9c;
   min-height: 473px;
-  padding: 123px 199px 33px 306px;
+  padding: 123px 250px 33px 250px;
 }
 .login-icon {
-  left: 200px;
+  left: 300px;
   position: absolute;
-  top: 160px;
-  width: 96px;
+  top: 60px;
+  width: 500px;
 }
 .login-icon > img {
   display: block;
@@ -5868,7 +5870,7 @@ fieldset[disabled] .navbar-inverse .navbar-btn.active {
   font-weight: 700;
 }
 .login-form {
-  background-color: #edeff1;
+  background-color: #ECF0F1;
   padding: 24px 23px 20px;
   position: relative;
   border-radius: 6px;
@@ -5903,11 +5905,6 @@ fieldset[disabled] .navbar-inverse .navbar-btn.active {
   font-size: 13px;
   margin-top: 15px;
   text-align: center;
-}
-@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 2) {
-  .login {
-    background-image: url(../img/login/imac-2x.png);
-  }
 }
 footer {
   background-color: #edeff1;

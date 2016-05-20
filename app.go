@@ -1,32 +1,105 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/gin-gonic/contrib/commonlog"
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/websocket"
 )
 
+var db *sql.DB
+
 func main() {
+	// database setting
+	user := "root"
+	dbname := "gizix"
+	db, _ = sql.Open("mysql", user+"@/"+dbname)
+	db.SetMaxIdleConns(5)
+
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Use(static.Serve("/js", static.LocalFile("public/js", true)))
+	r.Use(static.Serve("/css", static.LocalFile("public/css", true)))
+	r.Use(static.Serve("/img", static.LocalFile("public/img", true)))
+	r.Use(static.Serve("/fonts", static.LocalFile("public/fonts", true)))
+
+	// session store
+	store := sessions.NewCookieStore([]byte("gizix_happy"))
+	store.Options(sessions.Options{HttpOnly: true})
+	r.Use(sessions.Sessions("mysession", store))
 
 	r.Use(commonlog.New())
 
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{})
+		c.HTML(http.StatusOK, "login.tmpl", gin.H{})
+	})
+
+	r.POST("/login", func(c *gin.Context) {
+		userName := c.PostForm("name")
+		password := c.PostForm("password")
+
+		session := sessions.Default(c)
+		user, result := authenticate(userName, password)
+		if result {
+			//認証成功
+			session.Set("uid", user.ID)
+			session.Save()
+
+			c.Redirect(http.StatusSeeOther, "/dashboard")
+		} else {
+			//認証失敗
+			c.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"Message": "アカウント名かパスワードが間違っています。",
+			})
+		}
+	})
+
+	r.GET("/dashboard", func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+		// adminかどうかで場合分け
+		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+			"CurrentUser": cUser,
+		})
+	})
+
+	r.GET("/room", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "room.tmpl", gin.H{})
+	})
+
+	r.GET("/setting", func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+
+		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+			"CurrentUser": cUser,
+		})
+	})
+
+	r.POST("/user", func(c *gin.Context) {
+		userName := c.PostForm("name")
+		if createUser(userName) {
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CreateUserMessage": "アカウント: " + userName + "を作成しました。パスワードは'password'です。",
+			})
+		} else {
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CreateUserMessage": "すでにそのアカウント名は作成されています。別の名前でお試しください。",
+			})
+		}
 	})
 
 	r.GET("/test", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.tmpl", gin.H{})
 	})
 
+	// websocket interface
 	r.GET("/ws", func(c *gin.Context) {
 		wshandler(c.Writer, c.Request)
 	})

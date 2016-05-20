@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <title>Gizix</title>
+
+    <link href="/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/flat-ui.css" rel="stylesheet">
+    <link href="/css/gizix.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+          <nav class="navbar navbar-inverse navbar-embossed" role="navigation">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Gizix</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-01">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="/setting">{{ .CurrentUser.Name }}</a></li>
+                <li><a href="#logout">Logout</a></li>
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </nav><!-- /navbar -->
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-5">
+          <h4 class="setting-description">Change Password</h4>
+          <p> Please choose a password which is longer than 6 characters.</p>
+        </div>
+        <div class="col-xs-7">
+          <div class="setting-form">
+            <form method="POST" action="/user" >
+              <div class="col-xs-9">
+                <div class="form-group">
+                  <input type="text" name="old_password" placeholder="Enter current password" class="form-control">
+                </div>
+                <div class="form-group">
+                  <input type="text" name="new_password" placeholder="Enter new password" class="form-control">
+                </div>
+                <div class="form-group">
+                  <input type="text" name="confirm_password" placeholder="Confirm new password" class="form-control">
+                </div>
+              </div>
+              <div class="col-xs-3">
+                <div class="form-group form-password-submit">
+                  <input type="submit" class="btn btn-primary btn-block" value="Save">
+                </div>
+              </div>
+            </form>
+            <p>{{ .ChangePasswordMessage }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-5">
+          <h4 class="setting-description">Create User</h4>
+        </div>
+        <div class="col-xs-7">
+          <div class="setting-form">
+            <form method="POST" action="/user">
+              <div class="col-xs-9">
+                <div class="form-group">
+                  <input type="text" name="name" placeholder="Enter new accnout name" class="form-control">
+                </div>
+              </div>
+              <div class="col-xs-3">
+                <div class="form-group">
+                  <input type="submit" class="btn btn-primary btn-block" value="Create">
+                </div>
+              </div>
+              <div class="col-xs-12">
+                <small>{{ .CreateUserMessage }}</small>
+              </div>
+            <form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/jquery-1.11.3.min.js"></script>
+    <script src="/js/flat-ui.min.js"></script>
+    <script src="/js/gizix.js"></script>
+  </dody>
+</html>

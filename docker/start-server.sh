@@ -11,6 +11,7 @@ sudo service nginx start
 
 # start MySQL
 sudo service mysql start
+mysql -u root mysql < docker/create_table.sql
 
 # build and start
 go build -o bin/application || exit
