@@ -64,9 +64,22 @@ func main() {
 
 	r.GET("/dashboard", func(c *gin.Context) {
 		cUser := currentUser(sessions.Default(c))
-		// adminかどうかで場合分け
+		var joinedRooms = []RoomUsers{}
+		var otherRooms = []RoomUsers{}
+		jr := cUser.JoinedRooms()
+		or := cUser.NotJoinedRooms()
+		for _, r := range jr {
+			ru := r.WithUsers()
+			joinedRooms = append(joinedRooms, ru)
+		}
+		for _, r := range or {
+			ru := r.WithUsers()
+			otherRooms = append(otherRooms, ru)
+		}
 		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 			"CurrentUser": cUser,
+			"JoinedRooms": joinedRooms,
+			"otherRooms":  otherRooms,
 		})
 	})
 
@@ -90,15 +103,33 @@ func main() {
 		}
 	})
 
+	// create user
 	r.POST("/user", func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+		allUser := allUser()
+
 		userName := c.PostForm("name")
 		if createUser(userName) {
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CurrentUser":       cUser,
+				"AllUser":           allUser,
 				"CreateUserMessage": "アカウント: " + userName + "を作成しました。パスワードは'password'です。",
 			})
 		} else {
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
 				"CreateUserMessage": "すでにそのアカウント名は作成されています。別の名前でお試しください。",
+			})
+		}
+	})
+
+	// create room
+	r.POST("/room", func(c *gin.Context) {
+		roomName := c.PostForm("name")
+		if createRoom(roomName) {
+			c.Redirect(http.StatusSeeOther, "/dashboard")
+		} else {
+			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+				"CreateRoomMessage": "すでにその Room は作成されています。別の名前でお試しください。",
 			})
 		}
 	})

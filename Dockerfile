@@ -38,8 +38,9 @@ RUN NGPASS=$(pwgen 16 1) && \
 # add Go app
 ADD . /go/src/development/showwin/Gizix
 
-# update Nginx SSL setting
-RUN cp /go/src/development/showwin/Gizix/docker/nginx_conf /etc/nginx/sites-enabled/gizix
+# Custome Setting File
+RUN cp /go/src/development/showwin/Gizix/docker/nginx_conf /etc/nginx/sites-enabled/gizix && \
+    cp /go/src/development/showwin/Gizix/docker/my_cnf /etc/mysql/my.cnf
 
 EXPOSE 443
 

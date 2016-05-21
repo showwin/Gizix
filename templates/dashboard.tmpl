@@ -26,9 +26,67 @@
           </nav><!-- /navbar -->
         </div>
       </div>
+
+      <h1 class="demo-section-title">Dashboard</h1>
+
+      <div class="row">
+        <div class="col-xs-4">
+          <h4 class="setting-description">Create a New Room</h4>
+        </div>
+        <div class="col-xs-8">
+          <div class="setting-form">
+            <form method="POST" action="/room" >
+              <div class="col-xs-9">
+                <div class="form-group">
+                  <input type="text" name="name" placeholder="Enter Room Name" class="form-control">
+                </div>
+              </div>
+              <div class="col-xs-3">
+                <div class="form-group">
+                  <input type="submit" class="btn btn-primary btn-block" value="Create Room">
+                </div>
+              </div>
+            </form>
+            <p>{{ .CreateRoomMessage }}</p>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <h4>Rooms you belong to</h4>
+      {{ range $index, $room := .JoinedRooms }}
+        <div class="row">
+          <div class="col-xs-7">
+            <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-primary">{{ $room.Name }}</a>
+          </div>
+          <div class="col-xs-5">
+            <p class="room-user">
+              {{ range $i2, $user := $room.Users }}
+                {{ $user.Name }}
+              {{ end }}
+            </p>
+          </div>
+        </div>
+      {{ end }}
+      <hr>
+      <h4>Rooms you can join</h4>
+      {{ range $index, $room := .otherRooms }}
+        <div class="row">
+          <div class="col-xs-7">
+            <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-default">{{ $room.Name }}</a>
+          </div>
+          <div class="col-xs-5">
+            <p class="room-user">
+              {{ range $i2, $user := $room.Users }}
+                {{ $user.Name }}
+              {{ end }}
+            </p>
+          </div>
+        </div>
+      {{ end }}
     </div>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/flat-ui.min.js"></script>
+    <script src="/js/widgets.js"></script>
     <script src="/js/gizix.js"></script>
   </dody>
 </html>

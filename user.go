@@ -62,3 +62,57 @@ func createUser(name string) bool {
 		name, hashedPass, false, time.Now())
 	return err == nil
 }
+
+// JoinedRooms : return rooms which user joined
+func (u *User) JoinedRooms() (rooms []Room) {
+	rows, err := db.Query(
+		"SELECT id, name "+
+			"FROM rooms "+
+			"WHERE id IN ( "+
+			"SELECT room_id "+
+			"FROM user_room "+
+			"WHERE user_id = ?) "+
+			"ORDER BY called_at DESC", u.ID)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		r := Room{}
+		err = rows.Scan(&r.ID, &r.Name)
+		if err != nil {
+			fmt.Println(err)
+		}
+		rooms = append(rooms, r)
+	}
+	return
+}
+
+// NotJoinedRooms : return rooms which user not joined
+func (u *User) NotJoinedRooms() (rooms []Room) {
+	rows, err := db.Query(
+		"SELECT id, name "+
+			"FROM rooms "+
+			"WHERE id NOT IN ( "+
+			"SELECT room_id "+
+			"FROM user_room "+
+			"WHERE user_id = ?) "+
+			"ORDER BY name", u.ID)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		r := Room{}
+		err = rows.Scan(&r.ID, &r.Name)
+		if err != nil {
+			fmt.Println(err)
+		}
+		rooms = append(rooms, r)
+	}
+	return
+}
