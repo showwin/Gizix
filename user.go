@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -26,10 +27,28 @@ func authenticate(name string, password string) (user User, result bool) {
 	return user, (dbErr == nil && authErr == nil)
 }
 
+func allUser() (users []User) {
+	rows, err := db.Query("SELECT id, name, admin FROM users")
+	if err != nil {
+		return nil
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		u := User{}
+		err = rows.Scan(&u.ID, &u.Name, &u.Admin)
+		if err != nil {
+			fmt.Println(err)
+		}
+		users = append(users, u)
+	}
+	return
+}
+
 func currentUser(session sessions.Session) (u User) {
 	uID := session.Get("uid")
-	r := db.QueryRow("SELECT * FROM users WHERE id = ? LIMIT 1", uID)
-	r.Scan(&u.ID, &u.Name, &u.Password, &u.IconPath, &u.Admin, &u.CreatedAt, &u.LoginedAt)
+	r := db.QueryRow("SELECT id, name, password, admin FROM users WHERE id = ? LIMIT 1", uID)
+	r.Scan(&u.ID, &u.Name, &u.Password, &u.Admin)
 	return u
 }
 

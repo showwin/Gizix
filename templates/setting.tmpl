@@ -27,14 +27,16 @@
         </div>
       </div>
 
+      <h1 class="demo-section-title">Setting</h1>
+
       <div class="row">
         <div class="col-xs-5">
-          <h4 class="setting-description">Change Password</h4>
+          <h4 class="setting-description">Change Password {{ .CurrentUser.Admin }}</h4>
           <p> Please choose a password which is longer than 6 characters.</p>
         </div>
         <div class="col-xs-7">
           <div class="setting-form">
-            <form method="POST" action="/user" >
+            <form method="POST" action="/#dummy" >
               <div class="col-xs-9">
                 <div class="form-group">
                   <input type="text" name="old_password" placeholder="Enter current password" class="form-control">
@@ -56,33 +58,71 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-xs-5">
-          <h4 class="setting-description">Create User</h4>
-        </div>
-        <div class="col-xs-7">
-          <div class="setting-form">
-            <form method="POST" action="/user">
-              <div class="col-xs-9">
-                <div class="form-group">
-                  <input type="text" name="name" placeholder="Enter new accnout name" class="form-control">
+      {{ if eq .CurrentUser.Admin true }}
+        <hr>
+        <div class="row">
+          <div class="col-xs-5">
+            <h4 class="setting-description">Create Account</h4>
+            <p><strong>*Administrator Only*</strong><br>
+              Create a new user account. User name must be unique. Default password is "password", please change after the first login.</p>
+          </div>
+          <div class="col-xs-7">
+            <div class="setting-form">
+              <form method="POST" action="/user">
+                <div class="col-xs-9">
+                  <div class="form-group">
+                    <input type="text" name="name" placeholder="Enter new accnout name" class="form-control">
+                  </div>
                 </div>
-              </div>
-              <div class="col-xs-3">
-                <div class="form-group">
-                  <input type="submit" class="btn btn-primary btn-block" value="Create">
+                <div class="col-xs-3">
+                  <div class="form-group">
+                    <input type="submit" class="btn btn-primary btn-block" value="Create">
+                  </div>
                 </div>
-              </div>
-              <div class="col-xs-12">
-                <small>{{ .CreateUserMessage }}</small>
-              </div>
-            <form>
+                <div class="col-xs-12">
+                  <small>{{ .CreateUserMessage }}</small>
+                </div>
+              <form>
+            </div>
           </div>
         </div>
-      </div>
+        <hr>
+        <div class="row">
+          <div class="col-xs-5">
+            <h4 class="setting-description">Manage Account</h4>
+            <p><strong>*Administrator Only*</strong><br>
+              Check "✓" to grant the Administrator authority.</p>
+          </div>
+          <div class="col-xs-7">
+            <div class="setting-form">
+              <form method="POST" action="/#dummy">
+                {{ range $index, $user := .AllUser }}
+                <div class="col-xs-9">
+                  <div class="form-group">
+                    {{ $user.Name }}
+                  </div>
+                </div>
+                <div class="col-xs-3">
+                  <div class="bootstrap-switch-square">
+                    <input type="checkbox" checked data-toggle="switch" id="custom-switch-03" data-on-text="<span class='fui-check'></span>" data-off-text="<span class='fui-cross'></span>" />
+                  </div>
+                </div>
+                {{ end }}
+                <div class="col-xs-3">
+                  <div class="form-group form-manage-account-update">
+                    <input type="submit" class="btn btn-primary btn-block" value="Update">
+                  </div>
+                  <small>{{ .CreateUserMessage }}</small>
+                </div>
+              <form>
+            </div>
+          </div>
+        </div>
+      {{ end }}
     </div>
-    <script src="/js/jquery-1.11.3.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
     <script src="/js/flat-ui.min.js"></script>
+    <script src="/js/widgets.js"></script>
     <script src="/js/gizix.js"></script>
   </dody>
 </html>

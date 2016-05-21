@@ -77,9 +77,17 @@ func main() {
 	r.GET("/setting", func(c *gin.Context) {
 		cUser := currentUser(sessions.Default(c))
 
-		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-			"CurrentUser": cUser,
-		})
+		if cUser.Admin {
+			allUser := allUser()
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CurrentUser": cUser,
+				"AllUser":     allUser,
+			})
+		} else {
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CurrentUser": cUser,
+			})
+		}
 	})
 
 	r.POST("/user", func(c *gin.Context) {
