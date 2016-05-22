@@ -10,6 +10,10 @@
   </head>
 
   <body>
+    <div>
+      <input type="hidden" id="myid" name="uid" value="{{ .CurrentUser.ID }}">
+      <input type="hidden" id="mydomain" name="domain" value="{{ .Domain.Name }}">
+    </div>
     <div class="container">
       <div class="row">
         <div class="col-xs-12">
@@ -69,7 +73,7 @@
       {{ end }}
       <hr>
       <h4>Rooms you can join</h4>
-      {{ range $index, $room := .otherRooms }}
+      {{ range $index, $room := .OtherRooms }}
         <div class="row">
           <div class="col-xs-7">
             <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-default">{{ $room.Name }}</a>
@@ -88,5 +92,6 @@
     <script src="/js/flat-ui.min.js"></script>
     <script src="/js/widgets.js"></script>
     <script src="/js/gizix.js"></script>
+    <script src="/js/dashboard.js"></script>
   </dody>
 </html>

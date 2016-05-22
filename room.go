@@ -27,6 +27,11 @@ func createRoom(name string) bool {
 	return err == nil
 }
 
+func getRoom(id int) (r Room) {
+	db.QueryRow("SELECT id, name FROM rooms WHERE id = ?", id).Scan(&r.ID, &r.Name)
+	return
+}
+
 // WithUsers : return room with users info who belongs.
 func (r *Room) WithUsers() (ru RoomUsers) {
 	ru.ID = r.ID
@@ -36,7 +41,7 @@ func (r *Room) WithUsers() (ru RoomUsers) {
 		"SELECT id, name FROM users WHERE id IN (SELECT user_id FROM user_room WHERE room_id = ?)", r.ID)
 	if err != nil {
 		fmt.Println(err)
-		return ru
+		return
 	}
 
 	defer rows.Close()

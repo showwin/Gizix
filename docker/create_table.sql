@@ -32,5 +32,10 @@ CREATE TABLE IF NOT EXISTS gizix.user_room (
     REFERENCES rooms(id)
     ON DELETE CASCADE
 ) ENGINE = InnoDB;
-INSERT IGNORE INTO gizix.users (name, password, admin)
-VALUES ('Gizix', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 1)
+CREATE TABLE IF NOT EXISTS gizix.domain (
+  id INT AUTO_INCREMENT,
+  name VARCHAR(256),
+  PRIMARY KEY (id)
+) ENGINE = InnoDB;
+INSERT IGNORE INTO gizix.users (name, password, admin) VALUES ('Gizix', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 1);
+INSERT IGNORE INTO gizix.domain (id, name) VALUES (1, 'example.com');
