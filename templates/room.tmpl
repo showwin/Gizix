@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <title>Gizix</title>
+
+    <link href="/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/flat-ui.css" rel="stylesheet">
+    <link href="/css/gizix.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div>
+      <input type="hidden" id="myid" name="uid" value="{{ .CurrentUser.ID }}">
+      <input type="hidden" id="mydomain" name="domain" value="{{ .Domain.Name }}">
+      <input type="hidden" id="myroom" name="roomid" value="{{ .Room.ID }}">
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+          <nav class="navbar navbar-inverse navbar-embossed" role="navigation">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Gizix</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-01">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="/setting">{{ .CurrentUser.Name }}</a></li>
+                <li><a href="#logout">Logout</a></li>
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </nav><!-- /navbar -->
+        </div>
+      </div>
+
+      <h1 class="demo-section-title">{{ .Room.Name }}</h1>
+
+      <div class="row">
+        <button type="button" onclick="initialize();">Connect</button>
+        <button type="button" id="start_speech">Start Dictation</button>
+      </div>
+
+      <div class="row">
+        <div id="videos">
+          <video id="my-video" muted autoplay style="width: 240px; height: 180px; border: 1px solid black;"></video>
+        </div>
+      </div>
+      <hr>
+      <div id="conversation"></div>
+    </div>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/flat-ui.min.js"></script>
+    <script src="/js/widgets.js"></script>
+    <script src="/js/gizix.js"></script>
+    <script src="/js/msgpack.codec.js"></script>
+    <script src="/js/libspeexdsp.js"></script>
+    <script src="/js/resampler.min.js"></script>
+    <script src="/js/speechrec.min.js"></script>
+    <script src="/js/simplepeer.min.js"></script>
+    <script src="/js/room.js"></script>
+  </dody>
+</html>

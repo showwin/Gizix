@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/contrib/commonlog"
 	"github.com/gin-gonic/contrib/sessions"
@@ -82,8 +83,16 @@ func main() {
 		})
 	})
 
-	r.GET("/room", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "room.tmpl", gin.H{})
+	r.GET("/room/:roomID", func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+		domain := getDomain()
+		roomID, _ := strconv.Atoi(c.Param("roomID"))
+		room := getRoom(roomID)
+		c.HTML(http.StatusOK, "room.tmpl", gin.H{
+			"CurrentUser": cUser,
+			"Domain":      domain,
+			"Room":        room,
+		})
 	})
 
 	r.GET("/setting", func(c *gin.Context) {
@@ -165,7 +174,7 @@ func main() {
 	})
 
 	r.GET("/test", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "test.tmpl", gin.H{})
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{})
 	})
 
 	// websocket interface

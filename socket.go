@@ -14,7 +14,7 @@ type SocketBody struct {
 	Sdp    string `json:"sdp"`
 	To     string `json:"to"`
 	UID    string `json:"uid"`
-	RoomID string `json:"room_id"`
+	RoomID string `json:"roomID"`
 
 	Candidate PeerCandidateChild `json:"candidate"`
 }
@@ -78,6 +78,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			for _, u := range ru.Users {
 				id := strconv.Itoa(u.ID)
 				if id == body.UID {
+					fmt.Println("=== EXCLUDE" + body.UID)
 					continue
 				}
 				peerPool.Ids = append(peerPool.Ids, id)
@@ -87,7 +88,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 
 			//send to yourself
 			conn.WriteJSON(peerPool)
-		case "offer":
+		case "offer", "answer":
 			// Type: offer
 			fmt.Println("Type offer")
 			offer.Type = body.Type
