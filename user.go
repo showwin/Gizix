@@ -116,3 +116,17 @@ func (u *User) NotJoinedRooms() (rooms []Room) {
 	}
 	return
 }
+
+// IsJoin : return user joined the room or not
+func (u *User) IsJoin(roomID int) bool {
+	var count int
+	db.QueryRow("SELECT count(*) FROM user_room WHERE user_id = ? AND room_id = ?", u.ID, roomID).Scan(&count)
+	return count != 0
+}
+
+// JoinRoom : user join the room
+func (u *User) JoinRoom(roomID int) bool {
+	_, err := db.Exec(
+		"INSERT INTO user_room (user_id, room_id) VALUES (?, ?)", u.ID, roomID)
+	return err == nil
+}

@@ -10,13 +10,22 @@ import (
 
 // SocketBody struct
 type SocketBody struct {
-	Type   string `json:"type"`
-	Sdp    string `json:"sdp"`
-	To     string `json:"to"`
-	UID    string `json:"uid"`
-	RoomID string `json:"roomID"`
+	Type    string `json:"type"`
+	Sdp     string `json:"sdp"`
+	To      string `json:"to"`
+	UID     string `json:"uid"`
+	UName   string `json:"uname"`
+	RoomID  string `json:"roomID"`
+	Content string `json:"content"`
 
 	Candidate PeerCandidateChild `json:"candidate"`
+}
+
+// Conversation struct
+type Conversation struct {
+	Type    string `json:"type"`
+	UName   string `json:"uname"`
+	Content string `json:"content"`
 }
 
 // ClientInfo struct
@@ -50,8 +59,6 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		var body SocketBody
-		var offer PeerOffer
-		var candidate PeerCandidate
 		var peerPool PeerPool
 
 		conn.ReadJSON(&body)
@@ -68,7 +75,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			// Type: initialize
 			fmt.Println("Type initialize")
 			peerPool.Type = "initialize"
-			// return all user id in the room except you
+			// return online user's id in the room except you
 			roomID, err := strconv.Atoi(body.RoomID)
 			if err != nil {
 				fmt.Println(err)
@@ -77,11 +84,9 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			ru := room.WithUsers()
 			for _, u := range ru.Users {
 				id := strconv.Itoa(u.ID)
-				if id == body.UID {
-					fmt.Println("=== EXCLUDE" + body.UID)
-					continue
+				if _, ok := pool[id]; ok && id != body.UID {
+					peerPool.Ids = append(peerPool.Ids, id)
 				}
-				peerPool.Ids = append(peerPool.Ids, id)
 			}
 			fmt.Println("Users in Room: ")
 			fmt.Println(peerPool.Ids)
@@ -91,6 +96,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		case "offer", "answer":
 			// Type: offer
 			fmt.Println("Type offer")
+			var offer PeerOffer
 			offer.Type = body.Type
 			offer.Sdp = body.Sdp
 			offer.From = body.UID
@@ -99,9 +105,22 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			c := pool[body.To]
 			c.WriteJSON(&offer)
 			fmt.Printf("Send to " + body.To + "\n")
+		case "conversation":
+			// Type: conversation
+			fmt.Println("Type conversation")
+			var cvr Conversation
+			cvr.Type = body.Type
+			cvr.UName = body.UName
+			cvr.Content = body.Content
+
+			// send to other
+			c := pool[body.To]
+			c.WriteJSON(&cvr)
+			fmt.Printf("Send to " + body.To + "\n")
 		default:
 			// Type: candidate
 			fmt.Println("Type Candidate")
+			var candidate PeerCandidate
 			candidate.Candidate = body.Candidate
 			candidate.From = body.UID
 

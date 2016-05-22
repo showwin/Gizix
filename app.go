@@ -88,10 +88,14 @@ func main() {
 		domain := getDomain()
 		roomID, _ := strconv.Atoi(c.Param("roomID"))
 		room := getRoom(roomID)
+		skyway := getSkyWayKey()
+		joinedFlg := cUser.IsJoin(roomID)
 		c.HTML(http.StatusOK, "room.tmpl", gin.H{
 			"CurrentUser": cUser,
 			"Domain":      domain,
 			"Room":        room,
+			"SkyWay":      skyway,
+			"JoinedFlg":   joinedFlg,
 		})
 	})
 
@@ -101,10 +105,12 @@ func main() {
 		if cUser.Admin {
 			allUser := allUser()
 			domain := getDomain()
+			skyway := getSkyWayKey()
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
 				"CurrentUser": cUser,
 				"AllUser":     allUser,
 				"Domain":      domain,
+				"SkyWay":      skyway,
 			})
 		} else {
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
@@ -118,6 +124,7 @@ func main() {
 		cUser := currentUser(sessions.Default(c))
 		allUser := allUser()
 		domain := getDomain()
+		skyway := getSkyWayKey()
 
 		userName := c.PostForm("name")
 		if createUser(userName) {
@@ -125,12 +132,15 @@ func main() {
 				"CurrentUser":       cUser,
 				"AllUser":           allUser,
 				"Domain":            domain,
+				"SkyWay":            skyway,
 				"CreateUserMessage": "アカウント: " + userName + "を作成しました。パスワードは'password'です。",
 			})
 		} else {
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
 				"CurrentUser":       cUser,
 				"AllUser":           allUser,
+				"Domain":            domain,
+				"SkyWay":            skyway,
 				"CreateUserMessage": "すでにそのアカウント名は作成されています。別の名前でお試しください。",
 			})
 		}
@@ -148,18 +158,43 @@ func main() {
 		}
 	})
 
+	// join the room
+	r.POST("/join", func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+		roomID, _ := strconv.Atoi(c.PostForm("roomID"))
+		if cUser.JoinRoom(roomID) {
+			c.Redirect(http.StatusSeeOther, "/dashboard")
+		} else {
+			domain := getDomain()
+			roomID, _ := strconv.Atoi(c.Param("roomID"))
+			room := getRoom(roomID)
+			skyway := getSkyWayKey()
+			joinedFlg := cUser.IsJoin(roomID)
+			c.HTML(http.StatusOK, "room.tmpl", gin.H{
+				"CurrentUser":     cUser,
+				"Domain":          domain,
+				"Room":            room,
+				"SkyWay":          skyway,
+				"JoinedFlg":       joinedFlg,
+				"JoinRoomMessage": "Room の参加に失敗しました。",
+			})
+		}
+	})
+
 	// update Gizix domain (or ip-address)
 	r.POST("/domain", func(c *gin.Context) {
 		domainName := c.PostForm("name")
 
 		cUser := currentUser(sessions.Default(c))
 		allUser := allUser()
+		skyway := getSkyWayKey()
 		if updateDomain(domainName) {
 			domain := getDomain()
 			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
 				"CurrentUser":         cUser,
 				"AllUser":             allUser,
 				"Domain":              domain,
+				"SkyWay":              skyway,
 				"UpdateDomainMessage": "ドメイン名:" + domainName + " に設定しました。",
 			})
 		} else {
@@ -168,7 +203,36 @@ func main() {
 				"CurrentUser":         cUser,
 				"AllUser":             allUser,
 				"Domain":              domain,
+				"SkyWay":              skyway,
 				"UpdateDomainMessage": "設定に失敗しました。",
+			})
+		}
+	})
+
+	// update SkyWay API Key
+	r.POST("/skyway", func(c *gin.Context) {
+		skywayKey := c.PostForm("key")
+
+		cUser := currentUser(sessions.Default(c))
+		allUser := allUser()
+		domain := getDomain()
+		if updateSkyWayKey(skywayKey) {
+			skyway := getSkyWayKey()
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CurrentUser":            cUser,
+				"AllUser":                allUser,
+				"Domain":                 domain,
+				"SkyWay":                 skyway,
+				"UpdateSkyWayKeyMessage": "SkyWay API Key:" + skywayKey + " に設定しました。",
+			})
+		} else {
+			skyway := getSkyWayKey()
+			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+				"CurrentUser":            cUser,
+				"AllUser":                allUser,
+				"Domain":                 domain,
+				"SkyWay":                 skyway,
+				"UpdateSkyWayKeyMessage": "設定に失敗しました。",
 			})
 		}
 	})
