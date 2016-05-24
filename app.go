@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -78,7 +77,8 @@ func main() {
 	authorized.Use(AuthRequired())
 	{
 		authorized.GET("/dashboard", func(c *gin.Context) {
-			cUser := currentUser(sessions.Default(c))
+			session := sessions.Default(c)
+			cUser := currentUser(session)
 			var joinedRooms = []RoomUsers{}
 			var otherRooms = []RoomUsers{}
 			jr := cUser.JoinedRooms()
@@ -92,44 +92,58 @@ func main() {
 				otherRooms = append(otherRooms, ru)
 			}
 			domain := getDomain()
+
+			createRoomMessage := session.Flashes("CreateRoom")[0]
+			session.Save()
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-				"CurrentUser": cUser,
-				"JoinedRooms": joinedRooms,
-				"OtherRooms":  otherRooms,
-				"Domain":      domain,
+				"CurrentUser":       cUser,
+				"JoinedRooms":       joinedRooms,
+				"OtherRooms":        otherRooms,
+				"Domain":            domain,
+				"CreateRoomMessage": createRoomMessage,
 			})
 		})
 
 		authorized.GET("/room/:roomID", func(c *gin.Context) {
-			cUser := currentUser(sessions.Default(c))
+			session := sessions.Default(c)
+			cUser := currentUser(session)
 			domain := getDomain()
 			roomID, _ := strconv.Atoi(c.Param("roomID"))
 			room := getRoom(roomID)
 			skyway := getSkyWayKey()
 			joinedFlg := cUser.IsJoin(roomID)
+			joinRoomMessage := session.Flashes("JoinRoom")[0]
+			session.Save()
 			c.HTML(http.StatusOK, "room.tmpl", gin.H{
-				"CurrentUser": cUser,
-				"Domain":      domain,
-				"Room":        room,
-				"SkyWay":      skyway,
-				"JoinedFlg":   joinedFlg,
+				"CurrentUser":     cUser,
+				"Domain":          domain,
+				"Room":            room,
+				"SkyWay":          skyway,
+				"JoinedFlg":       joinedFlg,
+				"JoinRoomMessage": joinRoomMessage,
 			})
 		})
 
 		authorized.GET("/setting", func(c *gin.Context) {
-			cUser := currentUser(sessions.Default(c))
+			session := sessions.Default(c)
+			cUser := currentUser(session)
 
 			if cUser.Admin {
 				allUser := allUser()
 				domain := getDomain()
 				skyway := getSkyWayKey()
-				fmt.Println(sessions.Default(c).Flashes())
-				sessions.Default(c).Save()
+				createUserMessage := session.Flashes("CreateUser")[0]
+				updateDomainMessage := session.Flashes("UpdateDomain")[0]
+				updateSkyWayKeyMessage := session.Flashes("UpdateSkyWayKey")[0]
+				session.Save()
 				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-					"CurrentUser": cUser,
-					"AllUser":     allUser,
-					"Domain":      domain,
-					"SkyWay":      skyway,
+					"CurrentUser":            cUser,
+					"AllUser":                allUser,
+					"Domain":                 domain,
+					"SkyWay":                 skyway,
+					"CreateUserMessage":      createUserMessage,
+					"UpdateDomainMessage":    updateDomainMessage,
+					"UpdateSkyWayKeyMessage": updateSkyWayKeyMessage,
 				})
 			} else {
 				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
@@ -140,36 +154,26 @@ func main() {
 
 		// create room
 		authorized.POST("/room", func(c *gin.Context) {
+			session := sessions.Default(c)
 			roomName := c.PostForm("name")
-			if createRoom(roomName) {
-				c.Redirect(http.StatusSeeOther, "/dashboard")
-			} else {
-				c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-					"CreateRoomMessage": "すでにその Room は作成されています。別の名前でお試しください。",
-				})
+			if !createRoom(roomName) {
+				session.AddFlash("すでにその Room は作成されています。別の名前でお試しください。", "CreateRoom")
 			}
+			session.Save()
+			c.Redirect(http.StatusSeeOther, "/dashboard")
 		})
 
 		// join the room
 		authorized.POST("/join", func(c *gin.Context) {
-			cUser := currentUser(sessions.Default(c))
+			session := sessions.Default(c)
+			cUser := currentUser(session)
 			roomID, _ := strconv.Atoi(c.PostForm("roomID"))
 			if cUser.JoinRoom(roomID) {
 				c.Redirect(http.StatusSeeOther, "/dashboard")
 			} else {
-				domain := getDomain()
-				roomID, _ := strconv.Atoi(c.Param("roomID"))
-				room := getRoom(roomID)
-				skyway := getSkyWayKey()
-				joinedFlg := cUser.IsJoin(roomID)
-				c.HTML(http.StatusOK, "room.tmpl", gin.H{
-					"CurrentUser":     cUser,
-					"Domain":          domain,
-					"Room":            room,
-					"SkyWay":          skyway,
-					"JoinedFlg":       joinedFlg,
-					"JoinRoomMessage": "Room の参加に失敗しました。",
-				})
+				session.AddFlash("Room の参加に失敗しました。", "JoinRoom")
+				session.Save()
+				c.Redirect(http.StatusSeeOther, "/room/"+c.Param("roomID"))
 			}
 		})
 
@@ -183,14 +187,12 @@ func main() {
 
 				userName := c.PostForm("name")
 				if createUser(userName) {
-					session.AddFlash("アカウント: " + userName + "を作成しました。パスワードは'password'です。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("アカウント: "+userName+"を作成しました。パスワードは'password'です。", "CreateUser")
 				} else {
-					session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。", "CreateUser")
 				}
+				session.Save()
+				c.Redirect(http.StatusSeeOther, "/setting")
 			})
 
 			// update Gizix domain (or ip-address)
@@ -199,14 +201,12 @@ func main() {
 
 				domainName := c.PostForm("name")
 				if updateDomain(domainName) {
-					session.AddFlash("ドメイン名:" + domainName + " に設定しました。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("ドメイン名:"+domainName+" に設定しました。", "UpdateDomain")
 				} else {
-					session.AddFlash("ドメイン名の設定に失敗しました。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("ドメイン名の設定に失敗しました。", "UpdateDomain")
 				}
+				session.Save()
+				c.Redirect(http.StatusSeeOther, "/setting")
 			})
 
 			// update SkyWay API Key
@@ -215,14 +215,12 @@ func main() {
 
 				skywayKey := c.PostForm("key")
 				if updateSkyWayKey(skywayKey) {
-					session.AddFlash("SkyWay API Key:" + skywayKey + " に設定しました。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("SkyWay API Key:"+skywayKey+" に設定しました。", "UpdateSkyWayKey")
 				} else {
-					session.AddFlash("SkyWay API Key の設定に失敗しました。")
-					session.Save()
-					c.Redirect(http.StatusSeeOther, "/setting")
+					session.AddFlash("SkyWay API Key の設定に失敗しました。", "UpdateSkyWayKey")
 				}
+				session.Save()
+				c.Redirect(http.StatusSeeOther, "/setting")
 			})
 		}
 	}
