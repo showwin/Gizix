@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -60,185 +61,12 @@ func main() {
 		}
 	})
 
-	r.GET("/dashboard", func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
-		var joinedRooms = []RoomUsers{}
-		var otherRooms = []RoomUsers{}
-		jr := cUser.JoinedRooms()
-		or := cUser.NotJoinedRooms()
-		for _, r := range jr {
-			ru := r.WithUsers()
-			joinedRooms = append(joinedRooms, ru)
-		}
-		for _, r := range or {
-			ru := r.WithUsers()
-			otherRooms = append(otherRooms, ru)
-		}
-		domain := getDomain()
-		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-			"CurrentUser": cUser,
-			"JoinedRooms": joinedRooms,
-			"OtherRooms":  otherRooms,
-			"Domain":      domain,
-		})
-	})
+	r.GET("/logout", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Clear()
+		session.Save()
 
-	r.GET("/room/:roomID", func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
-		domain := getDomain()
-		roomID, _ := strconv.Atoi(c.Param("roomID"))
-		room := getRoom(roomID)
-		skyway := getSkyWayKey()
-		joinedFlg := cUser.IsJoin(roomID)
-		c.HTML(http.StatusOK, "room.tmpl", gin.H{
-			"CurrentUser": cUser,
-			"Domain":      domain,
-			"Room":        room,
-			"SkyWay":      skyway,
-			"JoinedFlg":   joinedFlg,
-		})
-	})
-
-	r.GET("/setting", func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
-
-		if cUser.Admin {
-			allUser := allUser()
-			domain := getDomain()
-			skyway := getSkyWayKey()
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser": cUser,
-				"AllUser":     allUser,
-				"Domain":      domain,
-				"SkyWay":      skyway,
-			})
-		} else {
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser": cUser,
-			})
-		}
-	})
-
-	// create user
-	r.POST("/user", func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
-		allUser := allUser()
-		domain := getDomain()
-		skyway := getSkyWayKey()
-
-		userName := c.PostForm("name")
-		if createUser(userName) {
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":       cUser,
-				"AllUser":           allUser,
-				"Domain":            domain,
-				"SkyWay":            skyway,
-				"CreateUserMessage": "アカウント: " + userName + "を作成しました。パスワードは'password'です。",
-			})
-		} else {
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":       cUser,
-				"AllUser":           allUser,
-				"Domain":            domain,
-				"SkyWay":            skyway,
-				"CreateUserMessage": "すでにそのアカウント名は作成されています。別の名前でお試しください。",
-			})
-		}
-	})
-
-	// create room
-	r.POST("/room", func(c *gin.Context) {
-		roomName := c.PostForm("name")
-		if createRoom(roomName) {
-			c.Redirect(http.StatusSeeOther, "/dashboard")
-		} else {
-			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-				"CreateRoomMessage": "すでにその Room は作成されています。別の名前でお試しください。",
-			})
-		}
-	})
-
-	// join the room
-	r.POST("/join", func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
-		roomID, _ := strconv.Atoi(c.PostForm("roomID"))
-		if cUser.JoinRoom(roomID) {
-			c.Redirect(http.StatusSeeOther, "/dashboard")
-		} else {
-			domain := getDomain()
-			roomID, _ := strconv.Atoi(c.Param("roomID"))
-			room := getRoom(roomID)
-			skyway := getSkyWayKey()
-			joinedFlg := cUser.IsJoin(roomID)
-			c.HTML(http.StatusOK, "room.tmpl", gin.H{
-				"CurrentUser":     cUser,
-				"Domain":          domain,
-				"Room":            room,
-				"SkyWay":          skyway,
-				"JoinedFlg":       joinedFlg,
-				"JoinRoomMessage": "Room の参加に失敗しました。",
-			})
-		}
-	})
-
-	// update Gizix domain (or ip-address)
-	r.POST("/domain", func(c *gin.Context) {
-		domainName := c.PostForm("name")
-
-		cUser := currentUser(sessions.Default(c))
-		allUser := allUser()
-		skyway := getSkyWayKey()
-		if updateDomain(domainName) {
-			domain := getDomain()
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":         cUser,
-				"AllUser":             allUser,
-				"Domain":              domain,
-				"SkyWay":              skyway,
-				"UpdateDomainMessage": "ドメイン名:" + domainName + " に設定しました。",
-			})
-		} else {
-			domain := getDomain()
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":         cUser,
-				"AllUser":             allUser,
-				"Domain":              domain,
-				"SkyWay":              skyway,
-				"UpdateDomainMessage": "設定に失敗しました。",
-			})
-		}
-	})
-
-	// update SkyWay API Key
-	r.POST("/skyway", func(c *gin.Context) {
-		skywayKey := c.PostForm("key")
-
-		cUser := currentUser(sessions.Default(c))
-		allUser := allUser()
-		domain := getDomain()
-		if updateSkyWayKey(skywayKey) {
-			skyway := getSkyWayKey()
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":            cUser,
-				"AllUser":                allUser,
-				"Domain":                 domain,
-				"SkyWay":                 skyway,
-				"UpdateSkyWayKeyMessage": "SkyWay API Key:" + skywayKey + " に設定しました。",
-			})
-		} else {
-			skyway := getSkyWayKey()
-			c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-				"CurrentUser":            cUser,
-				"AllUser":                allUser,
-				"Domain":                 domain,
-				"SkyWay":                 skyway,
-				"UpdateSkyWayKeyMessage": "設定に失敗しました。",
-			})
-		}
-	})
-
-	r.GET("/test", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{})
+		c.Redirect(http.StatusFound, "/")
 	})
 
 	// websocket interface
@@ -246,10 +74,183 @@ func main() {
 		socketHandler(c.Writer, c.Request)
 	})
 
+	authorized := r.Group("/")
+	authorized.Use(AuthRequired())
+	{
+		authorized.GET("/dashboard", func(c *gin.Context) {
+			cUser := currentUser(sessions.Default(c))
+			var joinedRooms = []RoomUsers{}
+			var otherRooms = []RoomUsers{}
+			jr := cUser.JoinedRooms()
+			or := cUser.NotJoinedRooms()
+			for _, r := range jr {
+				ru := r.WithUsers()
+				joinedRooms = append(joinedRooms, ru)
+			}
+			for _, r := range or {
+				ru := r.WithUsers()
+				otherRooms = append(otherRooms, ru)
+			}
+			domain := getDomain()
+			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+				"CurrentUser": cUser,
+				"JoinedRooms": joinedRooms,
+				"OtherRooms":  otherRooms,
+				"Domain":      domain,
+			})
+		})
+
+		authorized.GET("/room/:roomID", func(c *gin.Context) {
+			cUser := currentUser(sessions.Default(c))
+			domain := getDomain()
+			roomID, _ := strconv.Atoi(c.Param("roomID"))
+			room := getRoom(roomID)
+			skyway := getSkyWayKey()
+			joinedFlg := cUser.IsJoin(roomID)
+			c.HTML(http.StatusOK, "room.tmpl", gin.H{
+				"CurrentUser": cUser,
+				"Domain":      domain,
+				"Room":        room,
+				"SkyWay":      skyway,
+				"JoinedFlg":   joinedFlg,
+			})
+		})
+
+		authorized.GET("/setting", func(c *gin.Context) {
+			cUser := currentUser(sessions.Default(c))
+
+			if cUser.Admin {
+				allUser := allUser()
+				domain := getDomain()
+				skyway := getSkyWayKey()
+				fmt.Println(sessions.Default(c).Flashes())
+				sessions.Default(c).Save()
+				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+					"CurrentUser": cUser,
+					"AllUser":     allUser,
+					"Domain":      domain,
+					"SkyWay":      skyway,
+				})
+			} else {
+				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
+					"CurrentUser": cUser,
+				})
+			}
+		})
+
+		// create room
+		authorized.POST("/room", func(c *gin.Context) {
+			roomName := c.PostForm("name")
+			if createRoom(roomName) {
+				c.Redirect(http.StatusSeeOther, "/dashboard")
+			} else {
+				c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+					"CreateRoomMessage": "すでにその Room は作成されています。別の名前でお試しください。",
+				})
+			}
+		})
+
+		// join the room
+		authorized.POST("/join", func(c *gin.Context) {
+			cUser := currentUser(sessions.Default(c))
+			roomID, _ := strconv.Atoi(c.PostForm("roomID"))
+			if cUser.JoinRoom(roomID) {
+				c.Redirect(http.StatusSeeOther, "/dashboard")
+			} else {
+				domain := getDomain()
+				roomID, _ := strconv.Atoi(c.Param("roomID"))
+				room := getRoom(roomID)
+				skyway := getSkyWayKey()
+				joinedFlg := cUser.IsJoin(roomID)
+				c.HTML(http.StatusOK, "room.tmpl", gin.H{
+					"CurrentUser":     cUser,
+					"Domain":          domain,
+					"Room":            room,
+					"SkyWay":          skyway,
+					"JoinedFlg":       joinedFlg,
+					"JoinRoomMessage": "Room の参加に失敗しました。",
+				})
+			}
+		})
+
+		// Admin Required
+		admin := authorized.Group("/")
+		admin.Use(AdminRequired())
+		{
+			// create user
+			admin.POST("/user", func(c *gin.Context) {
+				session := sessions.Default(c)
+
+				userName := c.PostForm("name")
+				if createUser(userName) {
+					session.AddFlash("アカウント: " + userName + "を作成しました。パスワードは'password'です。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				} else {
+					session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				}
+			})
+
+			// update Gizix domain (or ip-address)
+			admin.POST("/domain", func(c *gin.Context) {
+				session := sessions.Default(c)
+
+				domainName := c.PostForm("name")
+				if updateDomain(domainName) {
+					session.AddFlash("ドメイン名:" + domainName + " に設定しました。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				} else {
+					session.AddFlash("ドメイン名の設定に失敗しました。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				}
+			})
+
+			// update SkyWay API Key
+			admin.POST("/skyway", func(c *gin.Context) {
+				session := sessions.Default(c)
+
+				skywayKey := c.PostForm("key")
+				if updateSkyWayKey(skywayKey) {
+					session.AddFlash("SkyWay API Key:" + skywayKey + " に設定しました。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				} else {
+					session.AddFlash("SkyWay API Key の設定に失敗しました。")
+					session.Save()
+					c.Redirect(http.StatusSeeOther, "/setting")
+				}
+			})
+		}
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		r.Run(":5000")
 	} else {
 		r.Run(":" + port)
+	}
+}
+
+// AuthRequired : redirect to "/" if not authorized
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid := sessions.Default(c).Get("uid")
+		if uid == nil {
+			c.Redirect(http.StatusFound, "/")
+		}
+	}
+}
+
+// AdminRequired : redirect to "/dashboard" if not admin
+func AdminRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cUser := currentUser(sessions.Default(c))
+		if cUser.Admin == false {
+			c.Redirect(http.StatusFound, "/dashboard")
+		}
 	}
 }
