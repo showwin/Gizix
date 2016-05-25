@@ -23,7 +23,7 @@ WORKDIR $GOPATH/src/development/showwin/Gizix
 CMD "debconf-set-selections <<< 'mysql-server mysql-server/root_password password mypassword'"
 CMD "debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password mypassword'"
 RUN apt-get -y install mysql-server
-ENV DATABASE_USERNAME=root
+ENV DATABASE_USERNAME=root DATABASE_NAME=gizix
 
 # Nginx setting for SSL
 RUN NGPASS=$(pwgen 16 1) && \
