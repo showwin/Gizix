@@ -1,4 +1,4 @@
-package main
+package controller
 
 // PeerOffer struct: use when offering to start P2P
 type PeerOffer struct {

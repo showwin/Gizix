@@ -1,9 +1,12 @@
-package main
+package controller
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	m "github.com/showwin/Gizix/model"
 
 	"github.com/gorilla/websocket"
 )
@@ -49,7 +52,10 @@ func registerClient(uid string, c *websocket.Conn) {
 	pool[uid] = c
 }
 
-func socketHandler(w http.ResponseWriter, r *http.Request) {
+// SocketHandler : WebSocket Handler
+func SocketHandler(c *gin.Context) {
+	w := c.Writer
+	r := c.Request
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Failed to set websocket upgrade.")
@@ -80,7 +86,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			room := getRoom(roomID)
+			room := m.GetRoom(roomID)
 			ru := room.WithUsers()
 			for _, u := range ru.Users {
 				id := strconv.Itoa(u.ID)

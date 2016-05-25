@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 	"os"
-	"strconv"
+
+	c "github.com/showwin/Gizix/controller"
+	database "github.com/showwin/Gizix/database"
+	m "github.com/showwin/Gizix/model"
 
 	"github.com/gin-gonic/contrib/commonlog"
 	"github.com/gin-gonic/contrib/sessions"
@@ -16,11 +19,8 @@ import (
 var db *sql.DB
 
 func main() {
-	// database setting
-	user := "root"
-	dbname := "gizix"
-	db, _ = sql.Open("mysql", user+"@/"+dbname)
-	db.SetMaxIdleConns(5)
+	// initialize database in production mode
+	database.Initialize(false)
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
@@ -29,242 +29,59 @@ func main() {
 	r.Use(static.Serve("/img", static.LocalFile("public/img", true)))
 	r.Use(static.Serve("/fonts", static.LocalFile("public/fonts", true)))
 
-	// session store
+	// use session store
 	store := sessions.NewCookieStore([]byte("gizix_happy"))
 	store.Options(sessions.Options{HttpOnly: true})
 	r.Use(sessions.Sessions("mysession", store))
 
+	// use log middleware
 	r.Use(commonlog.New())
 
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "login.tmpl", gin.H{})
-	})
+	// top page
+	r.GET("/", c.GetIndex)
 
-	r.POST("/login", func(c *gin.Context) {
-		userName := c.PostForm("name")
-		password := c.PostForm("password")
+	// login
+	r.POST("/login", c.PostLogin)
 
-		session := sessions.Default(c)
-		user, result := authenticate(userName, password)
-		if result {
-			//認証成功
-			session.Set("uid", user.ID)
-			session.Save()
-
-			c.Redirect(http.StatusSeeOther, "/dashboard")
-		} else {
-			//認証失敗
-			c.HTML(http.StatusOK, "login.tmpl", gin.H{
-				"Message": "アカウント名かパスワードが間違っています。",
-			})
-		}
-	})
-
-	r.GET("/logout", func(c *gin.Context) {
-		session := sessions.Default(c)
-		session.Clear()
-		session.Save()
-
-		c.Redirect(http.StatusFound, "/")
-	})
+	// logout
+	r.GET("/logout", c.GetLogout)
 
 	// websocket interface
-	r.GET("/ws", func(c *gin.Context) {
-		socketHandler(c.Writer, c.Request)
-	})
+	r.GET("/ws", c.SocketHandler)
 
 	authorized := r.Group("/")
 	authorized.Use(AuthRequired())
 	{
-		authorized.GET("/dashboard", func(c *gin.Context) {
-			session := sessions.Default(c)
-			cUser := currentUser(session)
-			var joinedRooms = []RoomUsers{}
-			var otherRooms = []RoomUsers{}
-			jr := cUser.JoinedRooms()
-			or := cUser.NotJoinedRooms()
-			for _, r := range jr {
-				ru := r.WithUsers()
-				joinedRooms = append(joinedRooms, ru)
-			}
-			for _, r := range or {
-				ru := r.WithUsers()
-				otherRooms = append(otherRooms, ru)
-			}
-			domain := getDomain()
+		// dashboard page
+		authorized.GET("/dashboard", c.GetDashboard)
 
-			// Flash Message
-			var createRoomMessage interface{}
-			if f := session.Flashes("CreateRoom"); len(f) != 0 {
-				createRoomMessage = f[0]
-			}
-			session.Save()
-			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-				"CurrentUser":       cUser,
-				"JoinedRooms":       joinedRooms,
-				"OtherRooms":        otherRooms,
-				"Domain":            domain,
-				"CreateRoomMessage": createRoomMessage,
-			})
-		})
+		// room page
+		authorized.GET("/room/:roomID", c.GetRoom)
 
-		authorized.GET("/room/:roomID", func(c *gin.Context) {
-			session := sessions.Default(c)
-			cUser := currentUser(session)
-			domain := getDomain()
-			roomID, _ := strconv.Atoi(c.Param("roomID"))
-			room := getRoom(roomID)
-			skyway := getSkyWayKey()
-			joinedFlg := cUser.IsJoin(roomID)
-
-			// Flash Message
-			var joinRoomMessage interface{}
-			if f := session.Flashes("JoinRoom"); len(f) != 0 {
-				joinRoomMessage = f[0]
-			}
-			session.Save()
-			c.HTML(http.StatusOK, "room.tmpl", gin.H{
-				"CurrentUser":     cUser,
-				"Domain":          domain,
-				"Room":            room,
-				"SkyWay":          skyway,
-				"JoinedFlg":       joinedFlg,
-				"JoinRoomMessage": joinRoomMessage,
-			})
-		})
-
-		authorized.GET("/setting", func(c *gin.Context) {
-			session := sessions.Default(c)
-			cUser := currentUser(session)
-
-			if cUser.Admin {
-				allUser := allUser()
-				domain := getDomain()
-				skyway := getSkyWayKey()
-
-				// Flash Message
-				var updatePasswordMessage interface{}
-				if f := session.Flashes("UpdatePassword"); len(f) != 0 {
-					updatePasswordMessage = f[0]
-				}
-				var createUserMessage interface{}
-				if f := session.Flashes("CreateUser"); len(f) != 0 {
-					createUserMessage = f[0]
-				}
-				var updateDomainMessage interface{}
-				if f := session.Flashes("UpdateDomain"); len(f) != 0 {
-					updateDomainMessage = f[0]
-				}
-				var updateSkyWayKeyMessage interface{}
-				if f := session.Flashes("UpdateSkyWayKey"); len(f) != 0 {
-					updateSkyWayKeyMessage = f[0]
-				}
-				session.Save()
-				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-					"CurrentUser":            cUser,
-					"AllUser":                allUser,
-					"Domain":                 domain,
-					"SkyWay":                 skyway,
-					"UpdatePasswordMessage":  updatePasswordMessage,
-					"CreateUserMessage":      createUserMessage,
-					"UpdateDomainMessage":    updateDomainMessage,
-					"UpdateSkyWayKeyMessage": updateSkyWayKeyMessage,
-				})
-			} else {
-				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-					"CurrentUser": cUser,
-				})
-			}
-		})
+		// setting page
+		authorized.GET("/setting", c.GetSetting)
 
 		// change password
-		authorized.POST("/password", func(c *gin.Context) {
-			session := sessions.Default(c)
-			cUser := currentUser(session)
-			oldPass := c.PostForm("old_password")
-			newPass := c.PostForm("new_password")
-			confPass := c.PostForm("confirm_password")
-			if newPass != confPass {
-				session.AddFlash("新しいパスワードが一致しません。", "UpdatePassword")
-			} else if cUser.UpdatePassword(oldPass, newPass) {
-				session.AddFlash("パスワードを更新しました。", "UpdatePassword")
-			} else {
-				session.AddFlash("パスワードの更新に失敗しました。", "UpdatePassword")
-			}
-			session.Save()
-			c.Redirect(http.StatusSeeOther, "/setting")
-		})
+		authorized.POST("/password", c.PostPassword)
 
 		// create room
-		authorized.POST("/room", func(c *gin.Context) {
-			session := sessions.Default(c)
-			roomName := c.PostForm("name")
-			if !createRoom(roomName) {
-				session.AddFlash("すでにその Room は作成されています。別の名前でお試しください。", "CreateRoom")
-			}
-			session.Save()
-			c.Redirect(http.StatusSeeOther, "/dashboard")
-		})
+		authorized.POST("/room", c.PostRoom)
 
 		// join the room
-		authorized.POST("/join", func(c *gin.Context) {
-			session := sessions.Default(c)
-			cUser := currentUser(session)
-			roomID, _ := strconv.Atoi(c.PostForm("roomID"))
-			if cUser.JoinRoom(roomID) {
-				c.Redirect(http.StatusSeeOther, "/dashboard")
-			} else {
-				session.AddFlash("Room の参加に失敗しました。", "JoinRoom")
-				session.Save()
-				c.Redirect(http.StatusSeeOther, "/room/"+c.Param("roomID"))
-			}
-		})
+		authorized.POST("/join", c.PostJoin)
 
 		// Admin Required
 		admin := authorized.Group("/")
 		admin.Use(AdminRequired())
 		{
 			// create user
-			admin.POST("/user", func(c *gin.Context) {
-				session := sessions.Default(c)
-
-				userName := c.PostForm("name")
-				if createUser(userName) {
-					session.AddFlash("アカウント: "+userName+"を作成しました。パスワードは'password'です。", "CreateUser")
-				} else {
-					session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。", "CreateUser")
-				}
-				session.Save()
-				c.Redirect(http.StatusSeeOther, "/setting")
-			})
+			admin.POST("/user", c.PostUser)
 
 			// update Gizix domain (or ip-address)
-			admin.POST("/domain", func(c *gin.Context) {
-				session := sessions.Default(c)
-
-				domainName := c.PostForm("name")
-				if updateDomain(domainName) {
-					session.AddFlash("ドメイン名:"+domainName+" に設定しました。", "UpdateDomain")
-				} else {
-					session.AddFlash("ドメイン名の設定に失敗しました。", "UpdateDomain")
-				}
-				session.Save()
-				c.Redirect(http.StatusSeeOther, "/setting")
-			})
+			admin.POST("/domain", c.PostDomain)
 
 			// update SkyWay API Key
-			admin.POST("/skyway", func(c *gin.Context) {
-				session := sessions.Default(c)
-
-				skywayKey := c.PostForm("key")
-				if updateSkyWayKey(skywayKey) {
-					session.AddFlash("SkyWay API Key:"+skywayKey+" に設定しました。", "UpdateSkyWayKey")
-				} else {
-					session.AddFlash("SkyWay API Key の設定に失敗しました。", "UpdateSkyWayKey")
-				}
-				session.Save()
-				c.Redirect(http.StatusSeeOther, "/setting")
-			})
+			admin.POST("/skyway", c.PostSkyWay)
 		}
 	}
 
@@ -289,7 +106,7 @@ func AuthRequired() gin.HandlerFunc {
 // AdminRequired : redirect to "/dashboard" if not admin
 func AdminRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		cUser := currentUser(sessions.Default(c))
+		cUser := m.CurrentUser(sessions.Default(c))
 		if cUser.Admin == false {
 			c.Redirect(http.StatusFound, "/dashboard")
 		}

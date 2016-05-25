@@ -1,8 +1,10 @@
-package main
+package model
 
 import (
 	"fmt"
 	"time"
+
+	db "github.com/showwin/Gizix/database"
 
 	"github.com/gin-gonic/contrib/sessions"
 
@@ -23,15 +25,17 @@ type User struct {
 // BcryptCost : cost value of encrypting by bcrypt
 const BcryptCost = 10
 
-func authenticate(name string, password string) (user User, result bool) {
-	dbErr := db.QueryRow("SELECT id, name, password, admin FROM users WHERE name = ? LIMIT 1", name).
+// Authenticate : user authentication
+func Authenticate(name string, password string) (user User, result bool) {
+	dbErr := db.Engine.QueryRow("SELECT id, name, password, admin FROM users WHERE name = ? LIMIT 1", name).
 		Scan(&user.ID, &user.Name, &user.Password, &user.Admin)
 	authErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return user, (dbErr == nil && authErr == nil)
 }
 
-func allUser() (users []User) {
-	rows, err := db.Query("SELECT id, name, admin FROM users")
+// AllUser : get all users
+func AllUser() (users []User) {
+	rows, err := db.Engine.Query("SELECT id, name, admin FROM users")
 	if err != nil {
 		return nil
 	}
@@ -48,18 +52,20 @@ func allUser() (users []User) {
 	return
 }
 
-func currentUser(session sessions.Session) (u User) {
+// CurrentUser : get current user
+func CurrentUser(session sessions.Session) (u User) {
 	uID := session.Get("uid")
-	r := db.QueryRow("SELECT id, name, password, admin FROM users WHERE id = ? LIMIT 1", uID)
+	r := db.Engine.QueryRow("SELECT id, name, password, admin FROM users WHERE id = ? LIMIT 1", uID)
 	r.Scan(&u.ID, &u.Name, &u.Password, &u.Admin)
 	return u
 }
 
-func createUser(name string) bool {
+// CreateUser : create user with the name
+func CreateUser(name string) bool {
 	password := []byte("password")
 	hashedPass, _ := bcrypt.GenerateFromPassword(password, BcryptCost)
 
-	_, err := db.Exec(
+	_, err := db.Engine.Exec(
 		"INSERT INTO users (name, password, admin, created_at) VALUES (?, ?, ?, ?)",
 		name, hashedPass, false, time.Now())
 	return err == nil
@@ -75,13 +81,13 @@ func (u *User) UpdatePassword(oldPassword string, newPassword string) bool {
 	// update password
 	password := []byte(newPassword)
 	hashedPass, _ := bcrypt.GenerateFromPassword(password, BcryptCost)
-	_, err := db.Exec("UPDATE users SET password = ? WHERE id = ?", hashedPass, u.ID)
+	_, err := db.Engine.Exec("UPDATE users SET password = ? WHERE id = ?", hashedPass, u.ID)
 	return err == nil
 }
 
 // JoinedRooms : return rooms which user joined
 func (u *User) JoinedRooms() (rooms []Room) {
-	rows, err := db.Query(
+	rows, err := db.Engine.Query(
 		"SELECT id, name "+
 			"FROM rooms "+
 			"WHERE id IN ( "+
@@ -108,7 +114,7 @@ func (u *User) JoinedRooms() (rooms []Room) {
 
 // NotJoinedRooms : return rooms which user not joined
 func (u *User) NotJoinedRooms() (rooms []Room) {
-	rows, err := db.Query(
+	rows, err := db.Engine.Query(
 		"SELECT id, name "+
 			"FROM rooms "+
 			"WHERE id NOT IN ( "+
@@ -136,13 +142,13 @@ func (u *User) NotJoinedRooms() (rooms []Room) {
 // IsJoin : return user joined the room or not
 func (u *User) IsJoin(roomID int) bool {
 	var count int
-	db.QueryRow("SELECT count(*) FROM user_room WHERE user_id = ? AND room_id = ?", u.ID, roomID).Scan(&count)
+	db.Engine.QueryRow("SELECT count(*) FROM user_room WHERE user_id = ? AND room_id = ?", u.ID, roomID).Scan(&count)
 	return count != 0
 }
 
 // JoinRoom : user join the room
 func (u *User) JoinRoom(roomID int) bool {
-	_, err := db.Exec(
+	_, err := db.Engine.Exec(
 		"INSERT INTO user_room (user_id, room_id) VALUES (?, ?)", u.ID, roomID)
 	return err == nil
 }
