@@ -20,6 +20,7 @@ func Initialize(testEnv bool) {
 		os.Setenv("DATABASE_USERNAME", "ubuntu")
 		os.Setenv("DATABASE_NAME", "circle_test")
 	} else if testEnv {
+		os.Setenv("DATABASE_USERNAME", "root")
 		os.Setenv("DATABASE_NAME", "gizix_test")
 	}
 
