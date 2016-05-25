@@ -20,6 +20,9 @@ type User struct {
 	LoginedAt string
 }
 
+// BcryptCost : cost value of encrypting by bcrypt
+const BcryptCost = 10
+
 func authenticate(name string, password string) (user User, result bool) {
 	dbErr := db.QueryRow("SELECT id, name, password, admin FROM users WHERE name = ? LIMIT 1", name).
 		Scan(&user.ID, &user.Name, &user.Password, &user.Admin)
@@ -54,12 +57,25 @@ func currentUser(session sessions.Session) (u User) {
 
 func createUser(name string) bool {
 	password := []byte("password")
-	cost := 10
-	hashedPass, _ := bcrypt.GenerateFromPassword(password, cost)
+	hashedPass, _ := bcrypt.GenerateFromPassword(password, BcryptCost)
 
 	_, err := db.Exec(
 		"INSERT INTO users (name, password, admin, created_at) VALUES (?, ?, ?, ?)",
 		name, hashedPass, false, time.Now())
+	return err == nil
+}
+
+// UpdatePassword : return success to update password or not
+func (u *User) UpdatePassword(oldPassword string, newPassword string) bool {
+	authErr := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(oldPassword))
+	if authErr != nil {
+		return false
+	}
+
+	// update password
+	password := []byte(newPassword)
+	hashedPass, _ := bcrypt.GenerateFromPassword(password, BcryptCost)
+	_, err := db.Exec("UPDATE users SET password = ? WHERE id = ?", hashedPass, u.ID)
 	return err == nil
 }
 

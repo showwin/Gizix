@@ -93,7 +93,11 @@ func main() {
 			}
 			domain := getDomain()
 
-			createRoomMessage := session.Flashes("CreateRoom")[0]
+			// Flash Message
+			var createRoomMessage interface{}
+			if f := session.Flashes("CreateRoom"); len(f) != 0 {
+				createRoomMessage = f[0]
+			}
 			session.Save()
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"CurrentUser":       cUser,
@@ -112,7 +116,12 @@ func main() {
 			room := getRoom(roomID)
 			skyway := getSkyWayKey()
 			joinedFlg := cUser.IsJoin(roomID)
-			joinRoomMessage := session.Flashes("JoinRoom")[0]
+
+			// Flash Message
+			var joinRoomMessage interface{}
+			if f := session.Flashes("JoinRoom"); len(f) != 0 {
+				joinRoomMessage = f[0]
+			}
 			session.Save()
 			c.HTML(http.StatusOK, "room.tmpl", gin.H{
 				"CurrentUser":     cUser,
@@ -132,15 +141,31 @@ func main() {
 				allUser := allUser()
 				domain := getDomain()
 				skyway := getSkyWayKey()
-				createUserMessage := session.Flashes("CreateUser")[0]
-				updateDomainMessage := session.Flashes("UpdateDomain")[0]
-				updateSkyWayKeyMessage := session.Flashes("UpdateSkyWayKey")[0]
+
+				// Flash Message
+				var updatePasswordMessage interface{}
+				if f := session.Flashes("UpdatePassword"); len(f) != 0 {
+					updatePasswordMessage = f[0]
+				}
+				var createUserMessage interface{}
+				if f := session.Flashes("CreateUser"); len(f) != 0 {
+					createUserMessage = f[0]
+				}
+				var updateDomainMessage interface{}
+				if f := session.Flashes("UpdateDomain"); len(f) != 0 {
+					updateDomainMessage = f[0]
+				}
+				var updateSkyWayKeyMessage interface{}
+				if f := session.Flashes("UpdateSkyWayKey"); len(f) != 0 {
+					updateSkyWayKeyMessage = f[0]
+				}
 				session.Save()
 				c.HTML(http.StatusOK, "setting.tmpl", gin.H{
 					"CurrentUser":            cUser,
 					"AllUser":                allUser,
 					"Domain":                 domain,
 					"SkyWay":                 skyway,
+					"UpdatePasswordMessage":  updatePasswordMessage,
 					"CreateUserMessage":      createUserMessage,
 					"UpdateDomainMessage":    updateDomainMessage,
 					"UpdateSkyWayKeyMessage": updateSkyWayKeyMessage,
@@ -150,6 +175,24 @@ func main() {
 					"CurrentUser": cUser,
 				})
 			}
+		})
+
+		// change password
+		authorized.POST("/password", func(c *gin.Context) {
+			session := sessions.Default(c)
+			cUser := currentUser(session)
+			oldPass := c.PostForm("old_password")
+			newPass := c.PostForm("new_password")
+			confPass := c.PostForm("confirm_password")
+			if newPass != confPass {
+				session.AddFlash("新しいパスワードが一致しません。", "UpdatePassword")
+			} else if cUser.UpdatePassword(oldPass, newPass) {
+				session.AddFlash("パスワードを更新しました。", "UpdatePassword")
+			} else {
+				session.AddFlash("パスワードの更新に失敗しました。", "UpdatePassword")
+			}
+			session.Save()
+			c.Redirect(http.StatusSeeOther, "/setting")
 		})
 
 		// create room

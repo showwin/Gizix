@@ -36,16 +36,16 @@
         </div>
         <div class="col-xs-7">
           <div class="setting-form">
-            <form method="POST" action="/#dummy" >
+            <form method="POST" action="/password" >
               <div class="col-xs-9">
                 <div class="form-group">
-                  <input type="text" name="old_password" placeholder="Enter current password" class="form-control">
+                  <input type="password" name="old_password" placeholder="Enter current password" class="form-control">
                 </div>
                 <div class="form-group">
-                  <input type="text" name="new_password" placeholder="Enter new password" class="form-control">
+                  <input type="password" name="new_password" placeholder="Enter new password" class="form-control">
                 </div>
                 <div class="form-group">
-                  <input type="text" name="confirm_password" placeholder="Confirm new password" class="form-control">
+                  <input type="password" name="confirm_password" placeholder="Confirm new password" class="form-control">
                 </div>
               </div>
               <div class="col-xs-3">
@@ -54,7 +54,7 @@
                 </div>
               </div>
             </form>
-            <p>{{ .ChangePasswordMessage }}</p>
+            <p>{{ .UpdatePasswordMessage }}</p>
           </div>
         </div>
       </div>
