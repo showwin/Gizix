@@ -1,0 +1,3 @@
+database:
+  override:
+    - mysql -u ubuntu circle_test < $HOME/Gizix/database/init.sql
