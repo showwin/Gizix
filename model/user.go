@@ -6,8 +6,6 @@ import (
 
 	db "github.com/showwin/Gizix/database"
 
-	"github.com/gin-gonic/contrib/sessions"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,8 +51,7 @@ func AllUser() (users []User) {
 }
 
 // CurrentUser : get current user
-func CurrentUser(session sessions.Session) (u User) {
-	uID := session.Get("uid")
+func CurrentUser(uID int) (u User) {
 	r := db.Engine.QueryRow("SELECT id, name, password, admin FROM users WHERE id = ? LIMIT 1", uID)
 	r.Scan(&u.ID, &u.Name, &u.Password, &u.Admin)
 	return u

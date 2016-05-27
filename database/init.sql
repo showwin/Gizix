@@ -93,5 +93,6 @@ CREATE TABLE IF NOT EXISTS gizix_test.skyway (
   PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 INSERT IGNORE INTO gizix_test.users (name, password, admin) VALUES ('Gizix', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 1);
+INSERT IGNORE INTO gizix_test.users (name, password, admin) VALUES ('Gizix2', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 0);
 INSERT IGNORE INTO gizix_test.domain (id, name) VALUES (1, 'example.com');
 INSERT IGNORE INTO gizix_test.skyway (id, api_key) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');

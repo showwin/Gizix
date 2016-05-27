@@ -12,7 +12,7 @@ import (
 // GetSetting response from GET /setting
 func GetSetting(c *gin.Context) {
 	session := sessions.Default(c)
-	cUser := m.CurrentUser(session)
+	cUser := m.CurrentUser(session.Get("uid").(int))
 
 	if cUser.Admin {
 		allUser := m.AllUser()
@@ -57,7 +57,7 @@ func GetSetting(c *gin.Context) {
 // PostPassword response from POST /password
 func PostPassword(c *gin.Context) {
 	session := sessions.Default(c)
-	cUser := m.CurrentUser(session)
+	cUser := m.CurrentUser(session.Get("uid").(int))
 	oldPass := c.PostForm("old_password")
 	newPass := c.PostForm("new_password")
 	confPass := c.PostForm("confirm_password")

@@ -106,7 +106,7 @@ func AuthRequired() gin.HandlerFunc {
 // AdminRequired : redirect to "/dashboard" if not admin
 func AdminRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		cUser := m.CurrentUser(sessions.Default(c))
+		cUser := m.CurrentUser(sessions.Default(c).Get("uid").(int))
 		if cUser.Admin == false {
 			c.Redirect(http.StatusFound, "/dashboard")
 		}

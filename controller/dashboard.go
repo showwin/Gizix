@@ -47,7 +47,7 @@ func GetLogout(c *gin.Context) {
 // GetDashboard response from Get /dashboard
 func GetDashboard(c *gin.Context) {
 	session := sessions.Default(c)
-	cUser := m.CurrentUser(session)
+	cUser := m.CurrentUser(session.Get("uid").(int))
 	var joinedRooms = []m.RoomUsers{}
 	var otherRooms = []m.RoomUsers{}
 	jr := cUser.JoinedRooms()

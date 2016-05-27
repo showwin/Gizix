@@ -13,7 +13,7 @@ import (
 // GetRoom response from GET /room/:id
 func GetRoom(c *gin.Context) {
 	session := sessions.Default(c)
-	cUser := m.CurrentUser(session)
+	cUser := m.CurrentUser(session.Get("uid").(int))
 	domain := m.GetDomain()
 	roomID, _ := strconv.Atoi(c.Param("roomID"))
 	room := m.GetRoom(roomID)
@@ -50,7 +50,7 @@ func PostRoom(c *gin.Context) {
 // PostJoin response from POST /join
 func PostJoin(c *gin.Context) {
 	session := sessions.Default(c)
-	cUser := m.CurrentUser(session)
+	cUser := m.CurrentUser(session.Get("uid").(int))
 	roomID, _ := strconv.Atoi(c.PostForm("roomID"))
 	if cUser.JoinRoom(roomID) {
 		c.Redirect(http.StatusSeeOther, "/dashboard")
