@@ -18,7 +18,7 @@ func Initialize(testEnv bool) {
 	onCircleCI := os.Getenv("CIRCLECI")
 	if onCircleCI == "true" {
 		os.Setenv("DATABASE_USERNAME", "ubuntu")
-		os.Setenv("DATABASE_NAME", "circle_test")
+		os.Setenv("DATABASE_NAME", "gizix_test")
 	} else if testEnv {
 		os.Setenv("DATABASE_USERNAME", "root")
 		os.Setenv("DATABASE_NAME", "gizix_test")
