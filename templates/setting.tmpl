@@ -149,16 +149,21 @@
         <hr>
         <div class="row">
           <div class="col-xs-5">
-            <h5 class="setting-description">SkyWay Setting</h5>
+            <h5 class="setting-description">IBM Watson Speech to Text Setting</h5>
             <p><strong>*Administrator Only*</strong><br>
-              Set the SkyWay API Key for the domain <code>{{ .Domain.Name }}</code>.</p>
+              Set the username and password for IBM Watson Speech to Text</code>.</p>
           </div>
           <div class="col-xs-7">
             <div class="setting-form">
-              <form method="POST" action="/skyway">
+              <form method="POST" action="/ibm_account">
                 <div class="col-xs-9">
                   <div class="form-group">
-                    <input type="text" name="key" placeholder="Enter SkyWay API Key" class="form-control" value="{{ .SkyWay.Key }}">
+                    <input type="text" name="username" placeholder="Enter username" class="form-control" value="{{ .IBMAccount.UserName }}">
+                  </div>
+                </div>
+                <div class="col-xs-9">
+                  <div class="form-group">
+                    <input type="text" name="password" placeholder="Enter password" class="form-control" value="{{ .IBMAccount.Password }}">
                   </div>
                 </div>
                 <div class="col-xs-3">
@@ -167,7 +172,7 @@
                   </div>
                 </div>
                 <div class="col-xs-12">
-                  <small>{{ .UpdateSkyWayKeyMessage }}</small>
+                  <small>{{ .UpdateIBMAccountMessage }}</small>
                 </div>
               </form>
             </div>

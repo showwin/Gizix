@@ -1,97 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>WebSocket Sample</title>
-    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript">
-        // 接続先URI
-        var uri = "ws://192.168.99.100:5000/ws";
-
-        // WebSocketオブジェクト
-        var webSocket = null;
-
-        // 初期処理
-        function init() {
-            // ボタン押下イベント設定
-            $("[data-name='message']").keypress(press);
-            // 接続
-            open();
-        }
-
-        // 接続
-        function open() {
-            if (webSocket == null) {
-                // WebSocket の初期化
-                webSocket = new WebSocket(uri);
-                // イベントハンドラの設定
-                webSocket.onopen = onOpen;
-                webSocket.onmessage = onMessage;
-                webSocket.onclose = onClose;
-                webSocket.onerror = onError;
-            }
-        }
-
-        // 接続イベント
-        function onOpen(event) {
-            chat("接続しました。");
-        }
-
-        // メッセージ受信イベント
-        function onMessage(event) {
-            if (event && event.data) {
-                chat(event.data);
-            }
-        }
-
-        // エラーイベント
-        function onError(event) {
-            //chat("エラーが発生しました。");
-        }
-
-        // 切断イベント
-        function onClose(event) {
-            chat("切断しました。3秒後に再接続します。(" + event.code + ")");
-            webSocket = null;
-            setTimeout("open()", 3000);
-        }
-
-        // キー押下時
-        function press(event) {
-            // キーがEnterか判定
-            if (event && event.which == 13) {
-                // メッセージ取得
-                var message = $("[data-name='message']").val();
-                // 存在チェック
-                if (message && webSocket) {
-                    // メッセージ送信
-                    webSocket.send("" + message);
-                    // メッセージ初期化
-                    $("[data-name='message']").val("");
-                }
-            }
-        }
-
-        // チャットに表示
-        function chat(message) {
-            // 100件まで残す
-            var chats = $("[data-name='chat']").find("div");
-            while (chats.length >= 100) {
-                chats = chats.last().remove();
-            }
-            // メッセージ表示
-            var msgtag = $("<div>").text(message);
-            $("[data-name='chat']").prepend(msgtag);
-        }
-
-        // 初期処理登録
-        $(init);
-    </script>
+    <meta charset="UTF-8">
+    <title>Watson Speech to Text client example</title>
 </head>
 <body>
-    <input type="text" data-name="message" size="100" />
-    <hr />
-    <div data-name="chat"></div>
+
+<section>
+    <h2>Transcribe from Microphone</h2>
+    <button id="button">Start Microphone Transcription</button>
+    <button id="stop">Stop</button>
+
+    <h2>Output:</h2>
+    <div id="output">Open your browser's console to view the output.</div>
+</section>
+
+<script src="/js/watson-speech.js"></script>
+<!-- window.fetch pollyfill for IE/Edge & Older Chrome/FireFox -->
+<script src="/js/fetch.js"></script>
+
+<h2>Code for this demo:</h2>
+
+<pre><code><script style="display: block;">
+document.querySelector('#button').onclick = function () {
+
+  var stream = WatsonSpeech.SpeechToText.recognizeMicrophone({
+      token: 'A9RCkTqy1l43LolC39cEKmeRfRJMhinLsrwYygCPeZoKs%2FuMVaVeBliW8jm7N8KDRiMqTLiis9YeJR58IdPQjkooIJYiNI95HOJLizGUwYkg1SclP9Bh%2FqiWpUIhlfZL%2Bc6C6iaBzWF5YeNRWaKCG7EJZmHeORf6RCkYEE%2F9%2BS14MyhMeE14WxAC9Qn9bWTSKyWKkYRd1bf8XRLHiGqk7LW04kMAXAorx4BibxsQdk55AVYs3iovn4CPrPGDlliwLAEILlRXt%2FSrY1HrDVAdLeutwaXWubNwGjoiL58XZLdvOpKTXhUKtB5kqAOpzN87RzYKui0iQ5iyhBDSLLA%2Fwyp4oJugulqGBh0Vd9AhKBEEUt0I6gvmtfmD28fcHpax%2FmsliG1dE%2F%2F0ug8FzS4HnZbJmG6fPHTipBnl4M7fmwTEW9cwb%2FV%2BLyMpAgPPLJCdWrzmIPJto9TpzLWrU9UH6co4651phYOEY6KDXjeyucx4hT6b5HBAvhvu1yLQYA2PXt8ioAwR%2F%2FWjmghzlJgjrLNezkMR1SWCOMvjXNizAqMc%2BW8NhMMwHtzrCvj%2FlJ2Odk8N60ItFdP91rTU4sGRBPc0d4fCEygAfcqnd1o2tSIEdAeQCfy1YJSLOHc51%2BJSH%2Be9VuDbtVP2nKKGFqmVtC879y5zjUisLmJtlUAzeI3G6dDyl2S4sL2bt8Q94KYGH9OZdcc5XgmVQIiP6NQYbOOK8uM0QKdUySoQUU3WykeB36LlAq1vL5mSjfUgO5REpnANIyzVibhSVDud564YF6OsMov0LsjSxnxehcuHn4DBovViLhWKit7BN%2FWJ%2FGURDUPDFWj9P8jLnPrC5mpcLw%3D%3D',
+      model: 'ja-JP_BroadbandModel'
+  });
+
+  stream.setEncoding('utf8'); // get text instead of Buffers for on data events
+
+  stream.on('data', function(data) {
+    console.log(data);
+  });
+
+  stream.on('error', function(err) {
+      console.log(err);
+  });
+
+  document.querySelector('#stop').onclick = stream.stop.bind(stream);
+
+};
+
+</script></code></pre>
+
 </body>
 </html>

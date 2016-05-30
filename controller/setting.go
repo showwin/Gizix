@@ -17,7 +17,7 @@ func GetSetting(c *gin.Context) {
 	if cUser.Admin {
 		allUser := m.AllUser()
 		domain := m.GetDomain()
-		skyway := m.GetSkyWayKey()
+		ibm := m.GetIBMAccount()
 
 		// Flash Message
 		var updatePasswordMessage interface{}
@@ -32,20 +32,20 @@ func GetSetting(c *gin.Context) {
 		if f := session.Flashes("UpdateDomain"); len(f) != 0 {
 			updateDomainMessage = f[0]
 		}
-		var updateSkyWayKeyMessage interface{}
-		if f := session.Flashes("UpdateSkyWayKey"); len(f) != 0 {
-			updateSkyWayKeyMessage = f[0]
+		var updateIBMAccountMessage interface{}
+		if f := session.Flashes("UpdateIBMAccount"); len(f) != 0 {
+			updateIBMAccountMessage = f[0]
 		}
 		session.Save()
 		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-			"CurrentUser":            cUser,
-			"AllUser":                allUser,
-			"Domain":                 domain,
-			"SkyWay":                 skyway,
-			"UpdatePasswordMessage":  updatePasswordMessage,
-			"CreateUserMessage":      createUserMessage,
-			"UpdateDomainMessage":    updateDomainMessage,
-			"UpdateSkyWayKeyMessage": updateSkyWayKeyMessage,
+			"CurrentUser":             cUser,
+			"AllUser":                 allUser,
+			"Domain":                  domain,
+			"IBMAccount":              ibm,
+			"UpdatePasswordMessage":   updatePasswordMessage,
+			"CreateUserMessage":       createUserMessage,
+			"UpdateDomainMessage":     updateDomainMessage,
+			"UpdateIBMAccountMessage": updateIBMAccountMessage,
 		})
 	} else {
 		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
@@ -100,15 +100,16 @@ func PostDomain(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/setting")
 }
 
-// PostSkyWay response from POST /skyway
-func PostSkyWay(c *gin.Context) {
+// PostIBMAccount response from POST /ibm_account
+func PostIBMAccount(c *gin.Context) {
 	session := sessions.Default(c)
 
-	skyWayKey := c.PostForm("key")
-	if m.UpdateSkyWayKey(skyWayKey) {
-		session.AddFlash("SkyWay API Key:"+skyWayKey+" に設定しました。", "UpdateSkyWayKey")
+	userName := c.PostForm("username")
+	password := c.PostForm("password")
+	if m.UpdateIBMAccount(userName, password) {
+		session.AddFlash("IBM Account の設定を更新しました。", "UpdateIBMAccount")
 	} else {
-		session.AddFlash("SkyWay API Key の設定に失敗しました。", "UpdateSkyWayKey")
+		session.AddFlash("IBM Account の設定に失敗しました。", "UpdateIBMAccount")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")

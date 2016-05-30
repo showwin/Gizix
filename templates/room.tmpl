@@ -15,7 +15,7 @@
       <input type="hidden" id="myname" name="uname" value="{{ .CurrentUser.Name }}">
       <input type="hidden" id="mydomain" name="domain" value="{{ .Domain.Name }}">
       <input type="hidden" id="myroom" name="roomid" value="{{ .Room.ID }}">
-      <input type="hidden" id="myskyway" name="apikey" value="{{ .SkyWay.Key }}">
+      <input type="hidden" id="watsonToken" name="watsonToken" value="{{ .WatsonToken }}">
     </div>
     <div class="container">
       <div class="row">
@@ -85,11 +85,9 @@
     <script src="/js/flat-ui.min.js"></script>
     <script src="/js/widgets.js"></script>
     <script src="/js/gizix.js"></script>
-    <script src="/js/msgpack.codec.js"></script>
-    <script src="/js/libspeexdsp.js"></script>
-    <script src="/js/resampler.min.js"></script>
-    <script src="/js/speechrec.min.js"></script>
     <script src="/js/simplepeer.min.js"></script>
+    <script src="/js/watson-speech.js"></script>
+    <script src="/js/fetch.js"></script>
     <script src="/js/room.js"></script>
   </dody>
 </html>

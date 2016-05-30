@@ -40,6 +40,9 @@ func main() {
 	// top page
 	r.GET("/", c.GetIndex)
 
+	// test page
+	r.GET("/test", c.GetTest)
+
 	// login
 	r.POST("/login", c.PostLogin)
 
@@ -81,7 +84,7 @@ func main() {
 			admin.POST("/domain", c.PostDomain)
 
 			// update SkyWay API Key
-			admin.POST("/skyway", c.PostSkyWay)
+			admin.POST("/ibm_account", c.PostIBMAccount)
 		}
 	}
 

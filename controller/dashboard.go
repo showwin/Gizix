@@ -14,6 +14,11 @@ func GetIndex(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.tmpl", gin.H{})
 }
 
+// GetTest response from GET /test
+func GetTest(c *gin.Context) {
+	c.HTML(http.StatusOK, "test.tmpl", gin.H{})
+}
+
 // PostLogin response from POST /login
 func PostLogin(c *gin.Context) {
 	userName := c.PostForm("name")

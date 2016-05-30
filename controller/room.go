@@ -17,7 +17,7 @@ func GetRoom(c *gin.Context) {
 	domain := m.GetDomain()
 	roomID, _ := strconv.Atoi(c.Param("roomID"))
 	room := m.GetRoom(roomID)
-	skyway := m.GetSkyWayKey()
+	wToken := m.GetIBMToken()
 	joinedFlg := cUser.IsJoin(roomID)
 
 	// Flash Message
@@ -30,7 +30,7 @@ func GetRoom(c *gin.Context) {
 		"CurrentUser":     cUser,
 		"Domain":          domain,
 		"Room":            room,
-		"SkyWay":          skyway,
+		"WatsonToken":     wToken,
 		"JoinedFlg":       joinedFlg,
 		"JoinRoomMessage": joinRoomMessage,
 	})
