@@ -83,7 +83,10 @@ func main() {
 			// update Gizix domain (or ip-address)
 			admin.POST("/domain", c.PostDomain)
 
-			// update SkyWay API Key
+			// update Language
+			admin.POST("/language", c.PostLanguage)
+
+			// update IBM Account
 			admin.POST("/ibm_account", c.PostIBMAccount)
 		}
 	}

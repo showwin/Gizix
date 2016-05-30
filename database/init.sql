@@ -47,12 +47,13 @@ CREATE TABLE IF NOT EXISTS gizix.ibm_account (
   id INT AUTO_INCREMENT,
   name VARCHAR(64),
   password VARCHAR(64),
+  model VARCHAR(64),
   PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 INSERT IGNORE INTO gizix.users (name, password, admin) VALUES ('Gizix', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 1);
 INSERT IGNORE INTO gizix.domain (id, name) VALUES (1, 'example.com');
 INSERT IGNORE INTO gizix.skyway (id, api_key) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');
-INSERT IGNORE INTO gizix.ibm_account (id, name, password) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 'xxxxxxxxxxxx');
+INSERT IGNORE INTO gizix.ibm_account (id, name, password, model) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'en-US_BroadbandModel');
 
 
 ### database for test ###
@@ -104,10 +105,11 @@ CREATE TABLE IF NOT EXISTS gizix_test.ibm_account (
   id INT AUTO_INCREMENT,
   name VARCHAR(64),
   password VARCHAR(64),
+  model VARCHAR(64),
   PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 INSERT IGNORE INTO gizix_test.users (name, password, admin) VALUES ('Gizix', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 1);
 INSERT IGNORE INTO gizix_test.users (name, password, admin) VALUES ('Gizix2', '$2a$10$Zg9nPS07epk/CT8PlyHtZei4FOGhtyKyl49Xvpmlrh.BHZKgdyYPS', 0);
 INSERT IGNORE INTO gizix_test.domain (id, name) VALUES (1, 'example.com');
 INSERT IGNORE INTO gizix_test.skyway (id, api_key) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');
-INSERT IGNORE INTO gizix_test.ibm_account (id, name, password) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 'xxxxxxxxxxxx');
+INSERT IGNORE INTO gizix_test.ibm_account (id, name, password, model) VALUES (1, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'en-US_BroadbandModel');

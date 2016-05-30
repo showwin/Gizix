@@ -149,6 +149,99 @@
         <hr>
         <div class="row">
           <div class="col-xs-5">
+            <h5 class="setting-description">Speech Language Setting</h5>
+            <p><strong>*Administrator Only*</strong><br>
+              Set the Language to speak for dictation.</code>.</p>
+          </div>
+          <div class="col-xs-7">
+            <div class="setting-form">
+              <form method="POST" action="/language">
+                <div class="col-xs-9">
+                  <div class="form-group">
+                    <select data-toggle="select" name="language" id="inverse-dropdown-searchfield" class="form-control select select-inverse mrs mbm">
+                      {{ if eq .Language "ar-AR_BroadbandModel" }}
+                        <option value="ar-AR_BroadbandModel" selected>Modern Standard Arabic (Broadband)</option>
+                      {{ else }}
+                        <option value="ar-AR_BroadbandModel">Modern Standard Arabic (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "en-UK_BroadbandModel" }}
+                        <option value="en-UK_BroadbandModel" selected>UK English (Broadband)</option>
+                      {{ else }}
+                        <option value="en-UK_BroadbandModel">UK English (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "en-UK_NarrowbandModel" }}
+                        <option value="en-UK_NarrowbandModel" selected>UK English (Narrowband)</option>
+                      {{ else }}
+                        <option value="en-UK_NarrowbandModel">UK English (Narrowband)</option>
+                      {{ end }}
+                      {{ if eq .Language "en-US_BroadbandModel" }}
+                        <option value="en-US_BroadbandModel" selected>US English (Broadband)</option>
+                      {{ else }}
+                        <option value="en-US_BroadbandModel">US English (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "en-US_NarrowbandModel" }}
+                        <option value="en-US_NarrowbandModel" selected>US English (Narrowband)</option>
+                      {{ else }}
+                        <option value="en-US_NarrowbandModel">US English (Narrowband)</option>
+                      {{ end }}
+                      {{ if eq .Language "es-ES_BroadbandModel" }}
+                        <option value="es-ES_BroadbandModel" selected>Spanish (Broadband)</option>
+                      {{ else }}
+                        <option value="es-ES_BroadbandModel">Spanish (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "es-ES_NarrowbandModel" }}
+                        <option value="es-ES_NarrowbandModel" selected>Spanish (Narrowband)</option>
+                      {{ else }}
+                        <option value="es-ES_NarrowbandModel">Spanish (Narrowband)</option>
+                      {{ end }}
+                      {{ if eq .Language "ja-JP_BroadbandModel" }}
+                        <option value="ja-JP_BroadbandModel" selected>Japanese (Broadband)</option>
+                      {{ else }}
+                        <option value="ja-JP_BroadbandModel">Japanese (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "ja-JP_NarrowbandModel" }}
+                        <option value="ja-JP_NarrowbandModel" selected>Japanese (Narrowband)</option>
+                      {{ else }}
+                        <option value="ja-JP_NarrowbandModel">Japanese (Narrowband)</option>
+                      {{ end }}
+                      {{ if eq .Language "pt-BR_BroadbandModel" }}
+                        <option value="pt-BR_BroadbandModel" selected>Brazilian Portuguese (Broadband)</option>
+                      {{ else }}
+                        <option value="pt-BR_BroadbandModel">Brazilian Portuguese (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "pt-BR_NarrowbandModel" }}
+                        <option value="pt-BR_NarrowbandModel" selected>Brazilian Portuguese (Narrowband)</option>
+                      {{ else }}
+                        <option value="pt-BR_NarrowbandModel">Brazilian Portuguese (Narrowband)</option>
+                      {{ end }}
+                      {{ if eq .Language "zh-CN_BroadbandModel" }}
+                        <option value="zh-CN_BroadbandModel" selected>Mandarin Chinese (Broadband)</option>
+                      {{ else }}
+                        <option value="zh-CN_BroadbandModel">Mandarin Chinese (Broadband)</option>
+                      {{ end }}
+                      {{ if eq .Language "zh-CN_NarrowbandModel" }}
+                        <option value="zh-CN_NarrowbandModel" selected>Mandarin Chinese (Narrowband)</option>
+                      {{ else }}
+                        <option value="zh-CN_NarrowbandModel">Mandarin Chinese (Narrowband)</option>
+                      {{ end }}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-xs-3">
+                  <div class="form-group">
+                    <input type="submit" class="btn btn-primary btn-block" value="Update">
+                  </div>
+                </div>
+                <div class="col-xs-12">
+                  <small>{{ .UpdateLanguageMessage }}</small>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-xs-5">
             <h5 class="setting-description">IBM Watson Speech to Text Setting</h5>
             <p><strong>*Administrator Only*</strong><br>
               Set the username and password for IBM Watson Speech to Text</code>.</p>
@@ -184,5 +277,10 @@
     <script src="/js/flat-ui.min.js"></script>
     <script src="/js/widgets.js"></script>
     <script src="/js/gizix.js"></script>
+    <script>
+      $(document).ready(function(){
+        $('select[id="inverse-dropdown-searchfield"]').select2({dropdownCssClass: 'select-inverse-dropdown show-select-search'});
+      });
+    </script>
   </dody>
 </html>
