@@ -252,21 +252,21 @@
         <hr>
         <div class="row">
           <div class="col-xs-5">
-            <h5 class="setting-description">IBM Watson Speech to Text Setting</h5>
+            <h5 class="setting-description">Watson Account Setting</h5>
             <p><strong>*Administrator Only*</strong><br>
-              Set the username and password for IBM Watson Speech to Text</code>.</p>
+              Set the username and password for IBM Watson Speech to Text.</p>
           </div>
           <div class="col-xs-7">
             <div class="setting-form">
-              <form method="POST" action="/ibm_account">
+              <form method="POST" action="/watson_account">
                 <div class="col-xs-9">
                   <div class="form-group">
-                    <input type="text" name="username" placeholder="Enter username" class="form-control" value="{{ .IBMAccount.UserName }}">
+                    <input type="text" name="username" placeholder="Enter username" class="form-control" value="{{ .WatsonAccount.UserName }}">
                   </div>
                 </div>
                 <div class="col-xs-9">
                   <div class="form-group">
-                    <input type="text" name="password" placeholder="Enter password" class="form-control" value="{{ .IBMAccount.Password }}">
+                    <input type="text" name="password" placeholder="Enter password" class="form-control" value="{{ .WatsonAccount.Password }}">
                   </div>
                 </div>
                 <div class="col-xs-3">
@@ -275,7 +275,7 @@
                   </div>
                 </div>
                 <div class="col-xs-12">
-                  <small>{{ .UpdateIBMAccountMessage }}</small>
+                  <small>{{ .UpdateWatsonAccountMessage }}</small>
                 </div>
               </form>
             </div>

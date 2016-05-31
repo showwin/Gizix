@@ -17,7 +17,7 @@ func GetRoom(c *gin.Context) {
 	domain := m.GetDomain()
 	roomID, _ := strconv.Atoi(c.Param("roomID"))
 	room := m.GetRoom(roomID)
-	wToken := m.GetIBMToken()
+	wToken := m.GetWatsonToken()
 	joinedFlg := cUser.IsJoin(roomID)
 
 	// Flash Message

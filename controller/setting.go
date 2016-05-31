@@ -19,7 +19,7 @@ func GetSetting(c *gin.Context) {
 		allUser := m.AllUser()
 		domain := m.GetDomain()
 		lang := m.GetLanguage()
-		ibm := m.GetIBMAccount()
+		wa := m.GetWatsonAccount()
 
 		// Flash Message
 		var updatePasswordMessage interface{}
@@ -42,23 +42,23 @@ func GetSetting(c *gin.Context) {
 		if f := session.Flashes("UpdateLanguage"); len(f) != 0 {
 			updateLanguageMessage = f[0]
 		}
-		var updateIBMAccountMessage interface{}
-		if f := session.Flashes("UpdateIBMAccount"); len(f) != 0 {
-			updateIBMAccountMessage = f[0]
+		var updateWatsonAccountMessage interface{}
+		if f := session.Flashes("UpdateWatsonAccount"); len(f) != 0 {
+			updateWatsonAccountMessage = f[0]
 		}
 		session.Save()
 		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
-			"CurrentUser":             cUser,
-			"AllUser":                 allUser,
-			"Domain":                  domain,
-			"Language":                lang,
-			"IBMAccount":              ibm,
-			"UpdatePasswordMessage":   updatePasswordMessage,
-			"CreateUserMessage":       createUserMessage,
-			"UpdateAdminsMessage":     updateAdminsMessage,
-			"UpdateDomainMessage":     updateDomainMessage,
-			"UpdateLanguageMessage":   updateLanguageMessage,
-			"UpdateIBMAccountMessage": updateIBMAccountMessage,
+			"CurrentUser":                cUser,
+			"AllUser":                    allUser,
+			"Domain":                     domain,
+			"Language":                   lang,
+			"WatsonAccount":              wa,
+			"UpdatePasswordMessage":      updatePasswordMessage,
+			"CreateUserMessage":          createUserMessage,
+			"UpdateAdminsMessage":        updateAdminsMessage,
+			"UpdateDomainMessage":        updateDomainMessage,
+			"UpdateLanguageMessage":      updateLanguageMessage,
+			"UpdateWatsonAccountMessage": updateWatsonAccountMessage,
 		})
 	} else {
 		c.HTML(http.StatusOK, "setting.tmpl", gin.H{
@@ -133,7 +133,7 @@ func PostDomain(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/setting")
 }
 
-// PostLangugage response from POST /language
+// PostLanguage response from POST /language
 func PostLanguage(c *gin.Context) {
 	session := sessions.Default(c)
 
@@ -148,16 +148,16 @@ func PostLanguage(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/setting")
 }
 
-// PostIBMAccount response from POST /ibm_account
-func PostIBMAccount(c *gin.Context) {
+// PostWatsonAccount response from POST /watson_account
+func PostWatsonAccount(c *gin.Context) {
 	session := sessions.Default(c)
 
 	userName := c.PostForm("username")
 	password := c.PostForm("password")
-	if m.UpdateIBMAccount(userName, password) {
-		session.AddFlash("Update IBM Account succssfully.", "UpdateIBMAccount")
+	if m.UpdateWatsonAccount(userName, password) {
+		session.AddFlash("Update Watson Account succssfully.", "UpdateWatsonAccount")
 	} else {
-		session.AddFlash("Failed to update IBM Account.", "UpdateIBMAccount")
+		session.AddFlash("Failed to update Watson Account.", "UpdateWatsonAccount")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")

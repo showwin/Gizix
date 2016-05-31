@@ -89,8 +89,8 @@ func main() {
 			// update Language
 			admin.POST("/language", c.PostLanguage)
 
-			// update IBM Account
-			admin.POST("/ibm_account", c.PostIBMAccount)
+			// update Watson Account
+			admin.POST("/watson_account", c.PostWatsonAccount)
 		}
 	}
 
