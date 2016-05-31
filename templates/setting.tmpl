@@ -107,11 +107,11 @@
                 <div class="col-xs-3">
                   <div class="bootstrap-switch-square">
                     {{ if eq $user.Name "Gizix" }}
-                      <input type="checkbox" checked disabled name="Gizix" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                      <input type="checkbox" checked disabled name="Gizix" data-toggle="switch" id="custom-switch-{{ $index }}" value="true" data-on-text="<span class='fui-check'></span>" data-off-text="<span class='fui-cross'></span>" />
                     {{ else if eq $user.Admin true }}
-                      <input type="checkbox" checked name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                      <input type="checkbox" checked name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true" data-on-text="<span class='fui-check'></span>" data-off-text="<span class='fui-cross'></span>" />
                     {{ else }}
-                      <input type="checkbox" name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                      <input type="checkbox" name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true" data-on-text="<span class='fui-check'></span>" data-off-text="<span class='fui-cross'></span>" />
                     {{ end }}
                   </div>
                 </div>

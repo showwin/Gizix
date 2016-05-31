@@ -41,7 +41,7 @@ func PostRoom(c *gin.Context) {
 	session := sessions.Default(c)
 	roomName := c.PostForm("name")
 	if !m.CreateRoom(roomName) {
-		session.AddFlash("すでにその Room は作成されています。別の名前でお試しください。", "CreateRoom")
+		session.AddFlash("The room already exists. Please try with a different name.", "CreateRoom")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/dashboard")
@@ -55,7 +55,7 @@ func PostJoin(c *gin.Context) {
 	if cUser.JoinRoom(roomID) {
 		c.Redirect(http.StatusSeeOther, "/dashboard")
 	} else {
-		session.AddFlash("Room の参加に失敗しました。", "JoinRoom")
+		session.AddFlash("Sorry, failed to join this room.", "JoinRoom")
 		session.Save()
 		c.Redirect(http.StatusSeeOther, "/room/"+c.Param("roomID"))
 	}

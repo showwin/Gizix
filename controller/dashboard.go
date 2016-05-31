@@ -35,7 +35,7 @@ func PostLogin(c *gin.Context) {
 	} else {
 		//認証失敗
 		c.HTML(http.StatusOK, "login.tmpl", gin.H{
-			"Message": "アカウント名かパスワードが間違っています。",
+			"Message": "Login Failed. The username or password may be incorrect.",
 		})
 	}
 }

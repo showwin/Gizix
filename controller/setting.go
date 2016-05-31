@@ -75,11 +75,11 @@ func PostPassword(c *gin.Context) {
 	newPass := c.PostForm("new_password")
 	confPass := c.PostForm("confirm_password")
 	if newPass != confPass {
-		session.AddFlash("新しいパスワードが一致しません。", "UpdatePassword")
+		session.AddFlash("Please make sure passwords are identical.", "UpdatePassword")
 	} else if cUser.UpdatePassword(oldPass, newPass) {
-		session.AddFlash("パスワードを更新しました。", "UpdatePassword")
+		session.AddFlash("Update password successfully.", "UpdatePassword")
 	} else {
-		session.AddFlash("パスワードの更新に失敗しました。", "UpdatePassword")
+		session.AddFlash("Failed to update password.", "UpdatePassword")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
@@ -91,9 +91,9 @@ func PostUser(c *gin.Context) {
 
 	userName := c.PostForm("name")
 	if m.CreateUser(userName) {
-		session.AddFlash("アカウント: "+userName+"を作成しました。パスワードは'password'です。", "CreateUser")
+		session.AddFlash("Create a new account: '"+userName+"'. Default password: 'password'.", "CreateUser")
 	} else {
-		session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。", "CreateUser")
+		session.AddFlash("The user already exists.", "CreateUser")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
@@ -111,9 +111,9 @@ func PostAdmins(c *gin.Context) {
 	}
 
 	if succFlg {
-		session.AddFlash("権限を変更しました", "UpdateAdmins")
+		session.AddFlash("Update authorities succssfully.", "UpdateAdmins")
 	} else {
-		session.AddFlash("権限の変更に失敗しました", "UpdateAdmins")
+		session.AddFlash("Failed to update authorities.", "UpdateAdmins")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
@@ -125,9 +125,9 @@ func PostDomain(c *gin.Context) {
 
 	domainName := c.PostForm("name")
 	if m.UpdateDomain(domainName) {
-		session.AddFlash("ドメイン名:"+domainName+" に設定しました。", "UpdateDomain")
+		session.AddFlash("Update domain name succssfully.", "UpdateDomain")
 	} else {
-		session.AddFlash("ドメイン名の設定に失敗しました。", "UpdateDomain")
+		session.AddFlash("Failed to update domain name.", "UpdateDomain")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
@@ -140,9 +140,9 @@ func PostLanguage(c *gin.Context) {
 	language := c.PostForm("language")
 	fmt.Println(language)
 	if m.UpdateLanguage(language) {
-		session.AddFlash("言語の設定を更新しました。", "UpdateLanguage")
+		session.AddFlash("Update speech language succssfully.", "UpdateLanguage")
 	} else {
-		session.AddFlash("言語の設定に失敗しました。", "UpdateLanguage")
+		session.AddFlash("Failed to update speech language", "UpdateLanguage")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
@@ -155,9 +155,9 @@ func PostIBMAccount(c *gin.Context) {
 	userName := c.PostForm("username")
 	password := c.PostForm("password")
 	if m.UpdateIBMAccount(userName, password) {
-		session.AddFlash("IBM Account の設定を更新しました。", "UpdateIBMAccount")
+		session.AddFlash("Update IBM Account succssfully.", "UpdateIBMAccount")
 	} else {
-		session.AddFlash("IBM Account の設定に失敗しました。", "UpdateIBMAccount")
+		session.AddFlash("Failed to update IBM Account.", "UpdateIBMAccount")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")
