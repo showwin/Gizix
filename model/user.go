@@ -82,6 +82,13 @@ func (u *User) UpdatePassword(oldPassword string, newPassword string) bool {
 	return err == nil
 }
 
+// UpdateAdmin : return success to update admin or not
+func (u *User) UpdateAdmin(admin bool) bool {
+	// update admin
+	_, err := db.Engine.Exec("UPDATE users SET admin = ? WHERE id = ?", admin, u.ID)
+	return err == nil
+}
+
 // JoinedRooms : return rooms which user joined
 func (u *User) JoinedRooms() (rooms []Room) {
 	rows, err := db.Engine.Query(

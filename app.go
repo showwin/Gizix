@@ -80,6 +80,9 @@ func main() {
 			// create user
 			admin.POST("/user", c.PostUser)
 
+			// update user authority
+			admin.POST("/admins", c.PostAdmins)
+
 			// update Gizix domain (or ip-address)
 			admin.POST("/domain", c.PostDomain)
 

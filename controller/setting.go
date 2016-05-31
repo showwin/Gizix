@@ -30,6 +30,10 @@ func GetSetting(c *gin.Context) {
 		if f := session.Flashes("CreateUser"); len(f) != 0 {
 			createUserMessage = f[0]
 		}
+		var updateAdminsMessage interface{}
+		if f := session.Flashes("UpdateAdmins"); len(f) != 0 {
+			updateAdminsMessage = f[0]
+		}
 		var updateDomainMessage interface{}
 		if f := session.Flashes("UpdateDomain"); len(f) != 0 {
 			updateDomainMessage = f[0]
@@ -51,6 +55,7 @@ func GetSetting(c *gin.Context) {
 			"IBMAccount":              ibm,
 			"UpdatePasswordMessage":   updatePasswordMessage,
 			"CreateUserMessage":       createUserMessage,
+			"UpdateAdminsMessage":     updateAdminsMessage,
 			"UpdateDomainMessage":     updateDomainMessage,
 			"UpdateLanguageMessage":   updateLanguageMessage,
 			"UpdateIBMAccountMessage": updateIBMAccountMessage,
@@ -89,6 +94,26 @@ func PostUser(c *gin.Context) {
 		session.AddFlash("アカウント: "+userName+"を作成しました。パスワードは'password'です。", "CreateUser")
 	} else {
 		session.AddFlash("すでにそのアカウント名は作成されています。別の名前でお試しください。", "CreateUser")
+	}
+	session.Save()
+	c.Redirect(http.StatusSeeOther, "/setting")
+}
+
+// PostAdmins response from POST /admins
+func PostAdmins(c *gin.Context) {
+	session := sessions.Default(c)
+
+	succFlg := true
+	for _, user := range m.AllUser() {
+		// Gizix always must be Admin
+		admin := c.PostForm(user.Name) == "true" || user.Name == "Gizix"
+		succFlg = succFlg && user.UpdateAdmin(admin)
+	}
+
+	if succFlg {
+		session.AddFlash("権限を変更しました", "UpdateAdmins")
+	} else {
+		session.AddFlash("権限の変更に失敗しました", "UpdateAdmins")
 	}
 	session.Save()
 	c.Redirect(http.StatusSeeOther, "/setting")

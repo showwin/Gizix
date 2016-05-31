@@ -53,8 +53,10 @@
                   <input type="submit" class="btn btn-primary btn-block" value="Save">
                 </div>
               </div>
+              <div class="col-xs-12">
+                <small>{{ .UpdatePasswordMessage }}</small>
+              </div>
             </form>
-            <p>{{ .UpdatePasswordMessage }}</p>
           </div>
         </div>
       </div>
@@ -95,7 +97,7 @@
           </div>
           <div class="col-xs-7">
             <div class="setting-form">
-              <form method="POST" action="/#dummy">
+              <form method="POST" action="/admins">
                 {{ range $index, $user := .AllUser }}
                 <div class="col-xs-9">
                   <div class="form-group">
@@ -104,7 +106,13 @@
                 </div>
                 <div class="col-xs-3">
                   <div class="bootstrap-switch-square">
-                    <input type="checkbox" checked data-toggle="switch" id="custom-switch-03" data-on-text="<span class='fui-check'></span>" data-off-text="<span class='fui-cross'></span>" />
+                    {{ if eq $user.Name "Gizix" }}
+                      <input type="checkbox" checked disabled name="Gizix" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                    {{ else if eq $user.Admin true }}
+                      <input type="checkbox" checked name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                    {{ else }}
+                      <input type="checkbox" name="{{ $user.Name }}" data-toggle="switch" id="custom-switch-{{ $index }}" value="true"/>
+                    {{ end }}
                   </div>
                 </div>
                 {{ end }}
@@ -112,7 +120,9 @@
                   <div class="form-group form-manage-account-update">
                     <input type="submit" class="btn btn-primary btn-block" value="Update">
                   </div>
-                  <small>{{ .UpdateAdminMessage }}</small>
+                </div>
+                <div class="col-xs-12">
+                  <small>{{ .UpdateAdminsMessage }}</small>
                 </div>
               </form>
             </div>
