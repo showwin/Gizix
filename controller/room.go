@@ -25,7 +25,6 @@ func GetRoom(c *gin.Context) {
 	if f := session.Flashes("JoinRoom"); len(f) != 0 {
 		joinRoomMessage = f[0]
 	}
-	session.Save()
 	c.HTML(http.StatusOK, "room.tmpl", gin.H{
 		"CurrentUser":     cUser,
 		"Domain":          domain,
