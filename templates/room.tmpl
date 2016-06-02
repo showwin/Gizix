@@ -35,25 +35,20 @@
       </div>
 
       <div class="row">
-        <div class="col-xs-6">
+        <div class="col-xs-6" id="room_title">
           <h1 class="demo-section-title">{{ .Room.Name }}</h1>
         </div>
         {{ if eq .JoinedFlg true }}
-          <div class="col-xs-3">
+          <div class="col-xs-3" id="start_video_call">
             <div class="form-group call-form">
               <label class="call-field-icon fui-video"></label>
               <button class="btn btn-block btn-lg btn-info" type="button" onclick="initialize();">Video Call</button>
             </div>
           </div>
-          <div class="col-xs-3">
+          <div class="col-xs-3" id="start_voice_call">
             <div class="form-group call-form">
               <label class="call-field-icon fui-mic"></label>
               <button class="btn btn-block btn-lg btn-info" type="button" onclick="initialize();">Voice Call</button>
-            </div>
-          </div>
-          <div class="col-xs-6">
-            <div class="form-group call-form">
-              <button class="btn btn-block btn-lg btn-danger" type="button" onclick="leave();">Leave Room</button>
             </div>
           </div>
         {{ else }}

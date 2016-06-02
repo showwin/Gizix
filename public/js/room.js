@@ -19,7 +19,7 @@ function leave() {
     var data = JSON.stringify({"type": "close", "to": sigTo, "uid": uid});
     socket.send(data);
   }
-  setTimeout("backToDashboard()", 1000);
+  setTimeout("backToDashboard()", 300);
 }
 
 function backToDashboard(){
@@ -38,6 +38,7 @@ function sendSignal(peer, id) {
   peer.on('signal', function (data) {
     data.to = id;
     data.uid = uid;
+    data.roomID = roomID;
     var text = JSON.stringify(data);
     socket.send(text);
     console.log("Signal send to: " + id + text);
@@ -50,6 +51,14 @@ function receive(signal, peer, sigFrom) {
 }
 
 function startCall(peer, id) {
+  if ($('#start_video_call').length == 1) {
+    // change disploayed button
+    $('#start_video_call').remove();
+    $('#start_voice_call').remove();
+    leave_button = '<div class="col-xs-6" id="leave_room"><div class="form-group call-form"><button class="btn btn-block btn-lg btn-danger" type="button" onclick="leave();">Leave Room</button></div></div>';
+    $('#room_title').after(leave_button);
+  }
+
   // start dictation
   startDictation();
   // start video call
@@ -71,6 +80,11 @@ function closeCall(peer, id) {
   connectedIds = connectedIds.filter(function(v){
     return v != id;
   })
+  if (connectedIds.length == 0) {
+    // stop dictatoin
+    stopDictation()
+  }
+
   // close video call
   $("#video-"+id).remove();
   peer.destroy()
@@ -126,6 +140,7 @@ function onMessage(event) {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
     delete signal['from'];
+    delete signal['room'];
     createConnection(sigFrom, false)
     receive(signal, connectedPeers[sigFrom], sigFrom);
     connectedIds.push(sigFrom);
@@ -134,6 +149,7 @@ function onMessage(event) {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
     delete signal['from'];
+    delete signal['room'];
     receive(signal, connectedPeers[sigFrom], sigFrom);
     connectedIds.push(sigFrom);
     startCall(connectedPeers[sigFrom], sigFrom);
@@ -146,6 +162,7 @@ function onMessage(event) {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
     delete signal['from'];
+    delete signal['room'];
     receive(signal, connectedPeers[sigFrom], sigFrom);
   }
 }
@@ -189,13 +206,13 @@ window.onload = function(){
 
 // 音声認識
 var WToken = $('#watsonToken').val();
+var stream = WatsonSpeech.SpeechToText.recognizeMicrophone({
+    token: WToken,
+    model: 'ja-JP_BroadbandModel'
+});
 
 function startDictation() {
   console.log('start Dictation!!!')
-  var stream = WatsonSpeech.SpeechToText.recognizeMicrophone({
-      token: WToken,
-      model: 'ja-JP_BroadbandModel'
-  });
 
   stream.setEncoding('utf8'); // get text instead of Buffers for on data events
 
@@ -213,10 +230,10 @@ function startDictation() {
   });
 
   stream.on('error', function(err) {
-      console.log(err);
-  });
-
-  $("#stop").click(function () {
     stream.stop.bind(stream);
   });
+}
+
+function stopDictation() {
+  stream.stop.bind(stream);
 }

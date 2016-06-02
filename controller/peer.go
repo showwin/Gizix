@@ -2,12 +2,13 @@ package controller
 
 // PeerOffer struct: use when offering to start P2P
 type PeerOffer struct {
-	Type string `json:"type"`
-	Sdp  string `json:"sdp"`
-	From string `json:"from"`
+	Type   string `json:"type"`
+	Sdp    string `json:"sdp"`
+	From   string `json:"from"`
+	RoomID string `json:"roomID"`
 }
 
-// PeerOffer struct: use when offering to close P2P
+// PeerClose struct: use when offering to close P2P
 type PeerClose struct {
 	Type string `json:"type"`
 	From string `json:"from"`

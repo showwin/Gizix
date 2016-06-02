@@ -28,10 +28,18 @@ function onMessage(event) {
   if (signal.type == 'info') {
     // confirm to register socket client
     console.log("Socket is registerd.");
-  } else {
-    // だれから送られてきたのか取得
-    var sigFrom = signal.from;
-    console.log("Call from " + sigFrom);
+  } else if (signal.type == 'offer') {
+    // どの部屋から電話がかかってきたか表示
+    var roomID = signal.roomID;
+    target = $('#room'+roomID);
+    title = "<h6 id='calling'>You got a call from</h6>";
+    $('#joined').before(title);
+    $('#calling').after("<hr>");
+    $('#calling').after(target);
+    targetButton = $('#room'+roomID+"_button");
+    targetButton.removeClass("btn-primary")
+    targetButton.addClass("btn-success")
+    $('#ringtone').get(0).play();
   }
 }
 

@@ -106,6 +106,7 @@ func SocketHandler(c *gin.Context) {
 			offer.Type = body.Type
 			offer.Sdp = body.Sdp
 			offer.From = body.UID
+			offer.RoomID = body.RoomID
 
 			// send to other
 			c := pool[body.To]

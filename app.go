@@ -28,6 +28,7 @@ func main() {
 	r.Use(static.Serve("/css", static.LocalFile("public/css", true)))
 	r.Use(static.Serve("/img", static.LocalFile("public/img", true)))
 	r.Use(static.Serve("/fonts", static.LocalFile("public/fonts", true)))
+	r.Use(static.Serve("/sounds", static.LocalFile("public/sounds", true)))
 
 	// use session store
 	store := sessions.NewCookieStore([]byte("gizix_happy"))

@@ -13,6 +13,7 @@
     <div>
       <input type="hidden" id="myid" name="uid" value="{{ .CurrentUser.ID }}">
       <input type="hidden" id="mydomain" name="domain" value="{{ .Domain.Name }}">
+      <audio id="ringtone" preload="auto" src="/sounds/ringtone.mp3" loop></audio>
     </div>
     <div class="container">
       <div class="row">
@@ -58,37 +59,45 @@
         </div>
       </div>
       <hr>
-      <h6>Rooms you belong to</h6>
-      {{ range $index, $room := .JoinedRooms }}
-        <div class="row">
-          <div class="col-xs-7">
-            <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-primary">{{ $room.Name }}</a>
-          </div>
-          <div class="col-xs-5">
-            <p class="room-user">
-              {{ range $i2, $user := $room.Users }}
-                {{ $user.Name }}
-              {{ end }}
-            </p>
-          </div>
+      <div class="row" id="joined">
+        <div class="col-xs-12">
+          <h6>Rooms you belong to</h6>
+          {{ range $index, $room := .JoinedRooms }}
+            <div class="row" id="room{{ $room.ID }}">
+              <div class="col-xs-7">
+                <a href="/room/{{ $room.ID }}" id="room{{ $room.ID }}_button" class="btn btn-block btn-tile btn-primary">{{ $room.Name }}</a>
+              </div>
+              <div class="col-xs-5">
+                <p class="room-user">
+                  {{ range $i2, $user := $room.Users }}
+                    {{ $user.Name }}
+                  {{ end }}
+                </p>
+              </div>
+            </div>
+          {{ end }}
         </div>
-      {{ end }}
+      </div>
       <hr>
-      <h6>Rooms you can join</h6>
-      {{ range $index, $room := .OtherRooms }}
-        <div class="row">
-          <div class="col-xs-7">
-            <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-default">{{ $room.Name }}</a>
-          </div>
-          <div class="col-xs-5">
-            <p class="room-user">
-              {{ range $i2, $user := $room.Users }}
-                {{ $user.Name }}
-              {{ end }}
-            </p>
-          </div>
+      <div class="row" id="not_joined">
+        <div class="col-xs-12">
+          <h6>Rooms you can join</h6>
+          {{ range $index, $room := .OtherRooms }}
+            <div class="row" id="room{{ $room.ID }}">
+              <div class="col-xs-7">
+                <a href="/room/{{ $room.ID }}" class="btn btn-block btn-tile btn-default">{{ $room.Name }}</a>
+              </div>
+              <div class="col-xs-5">
+                <p class="room-user">
+                  {{ range $i2, $user := $room.Users }}
+                    {{ $user.Name }}
+                  {{ end }}
+                </p>
+              </div>
+            </div>
+          {{ end }}
         </div>
-      {{ end }}
+      </div>
     </div>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/flat-ui.min.js"></script>
