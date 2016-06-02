@@ -51,6 +51,11 @@
               <button class="btn btn-block btn-lg btn-info" type="button" onclick="initialize();">Voice Call</button>
             </div>
           </div>
+          <div class="col-xs-6">
+            <div class="form-group call-form">
+              <button class="btn btn-block btn-lg btn-danger" type="button" onclick="leave();">Leave Room</button>
+            </div>
+          </div>
         {{ else }}
           <form method="POST" action="/join">
             <div class="col-xs-6">

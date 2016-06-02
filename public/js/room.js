@@ -1,7 +1,7 @@
 // ---- P2P ------
 var roomID = $('#myroom').val();
 var connectedIds = [];
-var connectedPeers = [];
+var connectedPeers = {};
 var initiator = false;
 var peerReady = false;
 
@@ -12,13 +12,26 @@ function initialize() {
   peerReady = true;
 }
 
+function leave() {
+  for (var i=0; i < connectedIds.length; i++) {
+    // send closing signal to others
+    var sigTo = connectedIds[i];
+    var data = JSON.stringify({"type": "close", "to": sigTo, "uid": uid});
+    socket.send(data);
+  }
+  setTimeout("backToDashboard()", 1000);
+}
+
+function backToDashboard(){
+    location.href='/dashboard';
+}
+
 function createConnection(sigId, initFlg) {
   console.log("Connect to: " + sigId);
-  connectedIds.push(sigId);
+
   var newPeer = new SimplePeer({ initiator: initFlg, stream: localStream });
-  connectedPeers.push(newPeer);
+  connectedPeers[sigId] = newPeer;
   sendSignal(newPeer, sigId);
-  startCall(newPeer, sigId);
 }
 
 function sendSignal(peer, id) {
@@ -32,7 +45,7 @@ function sendSignal(peer, id) {
   peerReady = true;
 }
 
-function receive(signal, peer) {
+function receive(signal, peer, sigFrom) {
   peer.signal(signal);
 }
 
@@ -44,6 +57,23 @@ function startCall(peer, id) {
   peer.on('stream', function (remoteStream) {
     $("#video-"+id).prop('src', window.URL.createObjectURL(remoteStream));
   })
+  peer.on('error', function (err) {
+    console.log("Peer Error has happened");
+    closeCall(peer, id)
+  })
+  peer.on('close', function () {
+    console.log("Peer has closed " + peer.channelName);
+    closeCall(peer, id)
+  })
+}
+
+function closeCall(peer, id) {
+  connectedIds = connectedIds.filter(function(v){
+    return v != id;
+  })
+  // close video call
+  $("#video-"+id).remove();
+  peer.destroy()
 }
 
 // ---- socket ------
@@ -92,16 +122,31 @@ function onMessage(event) {
     var u = signal.uname;
     var c = signal.content;
     $("#conversation").append("<p>"+u+": "+c+"</p>");
-  } else {
+  } else if (signal.type == 'offer') {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
     delete signal['from'];
-    console.log("Call From: " + sigFrom);
-    // まだ繋がっていなければ接続
-    if (connectedIds.indexOf(sigFrom) == -1) {
-      createConnection(sigFrom, false)
-    }
-    receive(signal, connectedPeers[connectedIds.indexOf(sigFrom)]);
+    createConnection(sigFrom, false)
+    receive(signal, connectedPeers[sigFrom], sigFrom);
+    connectedIds.push(sigFrom);
+    startCall(connectedPeers[sigFrom], sigFrom);
+  } else if (signal.type == 'answer') {
+    // だれから送られてきたのか取得
+    var sigFrom = signal.from;
+    delete signal['from'];
+    receive(signal, connectedPeers[sigFrom], sigFrom);
+    connectedIds.push(sigFrom);
+    startCall(connectedPeers[sigFrom], sigFrom);
+  } else if (signal.type == 'close') {
+    // だれから送られてきたのか取得
+    var sigFrom = signal.from;
+    closeCall(connectedPeers[sigFrom], sigFrom);
+  } else {
+    // type: candidate
+    // だれから送られてきたのか取得
+    var sigFrom = signal.from;
+    delete signal['from'];
+    receive(signal, connectedPeers[sigFrom], sigFrom);
   }
 }
 

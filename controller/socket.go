@@ -111,6 +111,17 @@ func SocketHandler(c *gin.Context) {
 			c := pool[body.To]
 			c.WriteJSON(&offer)
 			fmt.Printf("Send to " + body.To + "\n")
+		case "close":
+			// Type: close
+			fmt.Println("Type close")
+			var close PeerClose
+			close.Type = body.Type
+			close.From = body.UID
+
+			// send to other
+			c := pool[body.To]
+			c.WriteJSON(&close)
+			fmt.Printf("Send to " + body.To + "\n")
 		case "conversation":
 			// Type: conversation
 			fmt.Println("Type conversation")

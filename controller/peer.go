@@ -7,6 +7,12 @@ type PeerOffer struct {
 	From string `json:"from"`
 }
 
+// PeerOffer struct: use when offering to close P2P
+type PeerClose struct {
+	Type string `json:"type"`
+	From string `json:"from"`
+}
+
 // PeerCandidate struct: use after offering
 type PeerCandidate struct {
 	Candidate PeerCandidateChild `json:"candidate"`

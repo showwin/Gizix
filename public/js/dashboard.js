@@ -22,11 +22,16 @@ function onOpen(event) {
 }
 
 function onMessage(event) {
+  console.log("sockert receive");
   var signal = JSON.parse(event.data);
   // 通信時の自分のIDを保存する
   if (signal.type == 'info') {
     // confirm to register socket client
     console.log("Socket is registerd.");
+  } else {
+    // だれから送られてきたのか取得
+    var sigFrom = signal.from;
+    console.log("Call from " + sigFrom);
   }
 }
 
