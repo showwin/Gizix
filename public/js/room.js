@@ -186,23 +186,25 @@ function registerSocket() {
 
 // ---- Video ----
 var localStream = null;
+var myVideo = $('#my-video')[0];
 
-window.onload = function(){
+function setupLocalStream(videoFlg) {
   navigator.getUserMedia  = navigator.getUserMedia ||
                             navigator.webkitGetUserMedia ||
                             navigator.mozGetUserMedia;
   window.URL = window.URL || window.webkitURL;
 
-  var video = document.getElementById('my-video');
-  navigator.getUserMedia({video: true, audio: true}, function(stream) { // for success case
+  navigator.getUserMedia({video: videoFlg, audio: true}, function(stream) {
     localStream = stream;
-    video.src = window.URL.createObjectURL(stream);
-   },
-   function(err) { // for error case
+    myVideo.src = window.URL.createObjectURL(stream);
+  },
+  function(err) {
     console.log(err);
-   }
-  );
+  });
+  console.log("Stream Ready")
 }
+// voice call by default
+setupLocalStream(false)
 
 // 音声認識
 var WToken = $('#watsonToken').val();
