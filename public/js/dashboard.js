@@ -29,16 +29,24 @@ function onMessage(event) {
     // confirm to register socket client
     console.log("Socket is registerd.");
   } else if (signal.type == 'offer') {
-    // どの部屋から電話がかかってきたか表示
+    // display calling title if not exists
+    if ($('#calling').length == 0) {
+      title = "<h6 id='calling'>You got a call from</h6>";
+      $('#joined').before(title);
+      $('#calling').after("<hr>");
+    }
+    // display the room name you got call
     var roomID = signal.roomID;
     target = $('#room'+roomID);
-    title = "<h6 id='calling'>You got a call from</h6>";
-    $('#joined').before(title);
-    $('#calling').after("<hr>");
     $('#calling').after(target);
     targetButton = $('#room'+roomID+"_button");
-    targetButton.removeClass("btn-primary")
-    targetButton.addClass("btn-success")
+    var roomURL = targetButton.attr('href')
+    if ( !roomURL.match(/auto/)) {
+      roomURL = roomURL + '?auto=true';
+    }
+    targetButton.attr('href', roomURL);
+    targetButton.removeClass("btn-primary");
+    targetButton.addClass("btn-success");
     $('#ringtone').get(0).play();
   }
 }

@@ -69,7 +69,10 @@
       <div class="row">
         <div class="col-xs-12">
           <div id="videos">
-            <video id="my-video" muted autoplay style="width: 240px; height: 180px; border: 1px solid black;"></video>
+            <div class="col-xs-3">
+              <audio id="my-call" muted autoplay></audio>
+              <img src='/img/icons/png/avator.png' style='width: 220px; height: 220px; border: 1px solid black;'></img>
+            </div>
           </div>
         </div>
       </div>
@@ -89,5 +92,12 @@
     <script src="/js/watson-speech.js"></script>
     <script src="/js/fetch.js"></script>
     <script src="/js/room.js"></script>
+    <script>
+      // if URL is `room/:id?auto=true`, start call automatically
+      var auto_param = location.search.match(/auto=(.*?)(&|$)/)
+      if (auto_param != null &&  auto_param[1] == 'true') {
+        setTimeout("initialize()", 1000);
+      }
+    </script>
   </dody>
 </html>

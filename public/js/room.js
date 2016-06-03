@@ -50,7 +50,7 @@ function receive(signal, peer, sigFrom) {
   peer.signal(signal);
 }
 
-function startCall(peer, id) {
+function startCall(peer, id, videoFlg) {
   if ($('#start_video_call').length == 1) {
     // change disploayed button
     $('#start_video_call').remove();
@@ -62,10 +62,17 @@ function startCall(peer, id) {
   // start dictation
   startDictation();
   // start video call
-  $("#videos").append("<video id='video-"+id+"' autoplay style='width: 240px; height: 180px; border: 1px solid black;'></video>")
-  peer.on('stream', function (remoteStream) {
-    $("#video-"+id).prop('src', window.URL.createObjectURL(remoteStream));
-  })
+  if (videoFlg) {
+    $("#videos").append("<div class='col-xs-3' id='uid-"+id+"'><video id='call-"+id+"' autoplay style='width: 220px; height: 220px; border: 1px solid black;'></video></div>")
+    peer.on('stream', function (remoteStream) {
+      $("#call-"+id).prop('src', window.URL.createObjectURL(remoteStream));
+    })
+  } else {
+    $("#videos").append("<div class='col-xs-3' id='uid-"+id+"'><audio id='call-"+id+"' autoplay></audio><img src='/img/icons/png/avator.png' style='width: 220px; height: 220px; border: 1px solid black;'></img></div>")
+    peer.on('stream', function (remoteStream) {
+      $("#call-"+id).prop('src', window.URL.createObjectURL(remoteStream));
+    })
+  }
   peer.on('error', function (err) {
     console.log("Peer Error has happened");
     closeCall(peer, id)
@@ -86,7 +93,7 @@ function closeCall(peer, id) {
   }
 
   // close video call
-  $("#video-"+id).remove();
+  $("#uid-"+id).remove();
   peer.destroy()
 }
 
@@ -144,7 +151,7 @@ function onMessage(event) {
     createConnection(sigFrom, false)
     receive(signal, connectedPeers[sigFrom], sigFrom);
     connectedIds.push(sigFrom);
-    startCall(connectedPeers[sigFrom], sigFrom);
+    startCall(connectedPeers[sigFrom], sigFrom, false);
   } else if (signal.type == 'answer') {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
@@ -152,11 +159,11 @@ function onMessage(event) {
     delete signal['room'];
     receive(signal, connectedPeers[sigFrom], sigFrom);
     connectedIds.push(sigFrom);
-    startCall(connectedPeers[sigFrom], sigFrom);
+    startCall(connectedPeers[sigFrom], sigFrom, false);
   } else if (signal.type == 'close') {
     // だれから送られてきたのか取得
     var sigFrom = signal.from;
-    closeCall(connectedPeers[sigFrom], sigFrom);
+    closeCall(connectedPeers[sigFrom], sigFrom, false);
   } else {
     // type: candidate
     // だれから送られてきたのか取得
@@ -186,7 +193,7 @@ function registerSocket() {
 
 // ---- Video ----
 var localStream = null;
-var myVideo = $('#my-video')[0];
+var myCall = $('#my-call')[0];
 
 function setupLocalStream(videoFlg) {
   navigator.getUserMedia  = navigator.getUserMedia ||
@@ -196,7 +203,7 @@ function setupLocalStream(videoFlg) {
 
   navigator.getUserMedia({video: videoFlg, audio: true}, function(stream) {
     localStream = stream;
-    myVideo.src = window.URL.createObjectURL(stream);
+    myCall.src = window.URL.createObjectURL(stream);
   },
   function(err) {
     console.log(err);
